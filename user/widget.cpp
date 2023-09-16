@@ -23,16 +23,34 @@ Widget::Widget(QWidget *parent)
     infos->addButton(ui->btn_rules, 1);
     infos->addButton(ui->btn_logs, 2);
 
+    int shell_ret = shell("insmod ../kernel/lhy_firewall.ko", "Successfully installed the kernel module.",
+          "Failed to install the kernel module.");
+    if(shell_ret)
+        exit(1);
+
     devfd = open("/dev/lhy_memcdev", O_RDWR);
     if(devfd <= 0){
         QMessageBox::critical(this, "Fatal Error",
                               "Failed to open device /dev/lhy_memcdev! devfd = " + QString::number(devfd) + ", " + strerror(errno));
-        exit(1);
+        exit(2);
     }
 
     get_all_configs();
     memset(rule_path, 0, 256);
     get_rule_path();
+    QFileInfo fi("/etc/lhy_firewall/gui-autosave");
+    if(!fi.exists()){
+        system("touch /etc/lhy_firewall/gui-autosave");
+        system((QString("echo ") + autosave_path + " < /etc/lhy_firewall/gui-autosave").toStdString().c_str());
+    }else{
+        autosave_path = readall("/etc/lhy_firewall/gui-autosave");
+        if(!save_file_valid(autosave_path)){
+            qDebug() << "Previous autosave path invalid, switch to default: /etc/lhy_firewall/log_autosave.fwl";
+            system((QString("echo ") + autosave_path + " < /etc/lhy_firewall/gui-autosave").toStdString().c_str());
+            autosave_path = "/etc/lhy_firewall/log_autosave";
+        }
+    }
+
     for(int i=0; i<HOOK_CNT; i++)
         for(int j=0; j<PROTOCOL_SUPPORTED; j++){
             default_strategy[i][j] = ioctl(devfd, IOCTL_GET_DEFAULT + IOCTL_PROTO(j) + i, 0b10000000);
@@ -40,17 +58,17 @@ Widget::Widget(QWidget *parent)
 
     for(int i=0; i<HOOK_CNT; i++)
         for(int j=0; j<PROTOCOL_SUPPORTED; j++){
-            rule_models[i][j] = new QStandardItemModel(this);
+            rule_models[i][j] = new QStandardItemModel(nullptr);
             rule_models[i][j]->setColumnCount(rule_headers[j].length());
             for(int k=0; k<rule_headers[j].length(); k++)
                 rule_models[i][j]->setHeaderData(k, Qt::Horizontal, rule_headers[j].at(k));
         }
     for(int i=0; i<PROTOCOL_SUPPORTED; i++){
-        connection_models[i] = new QStandardItemModel(this);
+        connection_models[i] = new QStandardItemModel(nullptr);
         connection_models[i]->setColumnCount(connection_headers[i].length());
         for(int k=0; k<connection_headers[i].length(); k++)
             connection_models[i]->setHeaderData(k, Qt::Horizontal, connection_headers[i].at(k));
-        log_models[i] = new QStandardItemModel(this);
+        log_models[i] = new QStandardItemModel(nullptr);
         log_models[i]->setColumnCount(log_headers[i].length());
         for(int k=0; k<log_headers[i].length(); k++)
             log_models[i]->setHeaderData(k, Qt::Horizontal, log_headers[i].at(k));
@@ -62,11 +80,30 @@ Widget::Widget(QWidget *parent)
     ui->pre_routing->click();
     ui->btn_tcp->click();
     ui->btn_connections->click();
+    selected_model = connection_models[current_proto];
     initialize_click = false;
     start_update_table(0, 0, 0);
 
     ui->infotable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->infotable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->infotable->verticalHeader()->hide();
+    refresh_thread = new QThread();
+    connect(refresh_thread, &QThread::started, this, [](){
+        while(true){
+            QCoreApplication::processEvents();
+        }
+    });
+    // refresh_thread->start();
+}
+
+void Widget::closeEvent(QCloseEvent* e){
+    Q_UNUSED(e);
+    ::close(devfd);
+    refresh_thread->exit();
+    update_timer.stop();
+    shell("rmmod ../kernel/lhy_firewall.ko", "Successfully removed the kernel module.",
+          "Failed to remove the kernel module.");
+    exit(0);
 }
 
 Widget::~Widget()
@@ -151,29 +188,64 @@ void Widget::start_update_table(unsigned info, unsigned hook, unsigned proto){
     });
     update_timer.setInterval(frontend_update_interval);
     update_timer.start();
-}
-
-void Widget::update_table(unsigned info, unsigned hook, unsigned proto){
-    switch(info){
-    case INFO_CON:
-        ui->infotable->setModel(connection_models[proto]);
-        con_table::update_connections(proto);
-        break;
-    case INFO_RULE:
-        ui->infotable->setModel(rule_models[hook][proto]);
-        rule_table::update_rules(hook, proto);
-        break;
-    case INFO_LOG:
-        ui->infotable->setModel(log_models[proto]);
-        log_table::update_log(proto);
-        break;
-    }
+    ui->infotable->verticalHeader()->hide();
     ui->infotable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->infotable->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->infotable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->infotable->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->infotable->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->infotable->viewport()->update();
+}
+
+void Widget::show_row_range(unsigned start, unsigned end){
+    for(int i=0; i<start; i++)
+        ui->infotable->setRowHidden(i, true);
+    for(int i=start; i<end; i++)
+        ui->infotable->setRowHidden(i, false);
+    for(int i=end; i<selected_model->rowCount(); i++)
+        ui->infotable->setRowHidden(i, true);
+}
+
+void Widget::update_table(unsigned info, unsigned hook, unsigned proto){
+    QThread* update_thread = new QThread(this);
+    connect(update_thread, &QThread::started, this, [this, info, hook, proto](){
+        ui->infotable->setUpdatesEnabled(false);
+        switch(info){
+        case INFO_CON:
+            selected_model = connection_models[proto];
+            ui->infotable->setModel(selected_model);
+            con_table::update_connections(proto);
+            break;
+        case INFO_RULE:
+            selected_model = rule_models[hook][proto];
+            ui->infotable->setModel(selected_model);
+            rule_table::update_rules(hook, proto);
+            break;
+        case INFO_LOG:
+            selected_model = log_models[proto];
+            ui->infotable->setModel(selected_model);
+            log_table::update_log(proto);
+            break;
+        }
+        if((unsigned)selected_model->rowCount() <= rows_per_show)
+            ui->view_slider->setEnabled(false);
+        else
+            ui->view_slider->setEnabled(true);
+        ui->view_slider->setMaximum(floor(selected_model->rowCount() * 1.0 / rows_per_show));
+        if(log_models[current_proto]->rowCount() < log_length[current_proto])
+            show_row_range(ui->view_slider->value() * rows_per_show, (ui->view_slider->value() + 1) * rows_per_show);
+        else{
+            if(log_model_ptr[current_proto] + ui->view_slider->value() * rows_per_show < log_length[current_proto] &&
+               log_model_ptr[current_proto] + (ui->view_slider->value() + 1) * rows_per_show > log_length[current_proto]){
+                show_row_range(log_model_ptr[current_proto] + ui->view_slider->value() * rows_per_show, log_length[current_proto]);
+                show_row_range(0, log_model_ptr[current_proto] + (ui->view_slider->value() + 1) * rows_per_show - log_length[current_proto]);
+            }else{
+                show_row_range((log_model_ptr[current_proto] + ui->view_slider->value() * rows_per_show) % log_length[current_proto],
+                               (log_model_ptr[current_proto] + (ui->view_slider->value() + 1) * rows_per_show) % log_length[current_proto]);
+            }
+        }
+        ui->infotable->setUpdatesEnabled(true);
+    });
+    update_thread->start();
 }
 
 void Widget::on_btn_addrule_clicked()
@@ -197,18 +269,24 @@ void Widget::on_btn_settings_clicked()
 void Widget::on_btn_connections_clicked()
 {
     current_info = INFO_CON;
+    for(auto btn: hooks->buttons())
+        btn->setEnabled(false);
     start_update_table(current_info, current_hook, current_proto);
 }
 
 void Widget::on_btn_rules_clicked()
 {
     current_info = INFO_RULE;
+    for(auto btn: hooks->buttons())
+        btn->setEnabled(true);
     start_update_table(current_info, current_hook, current_proto);
 }
 
 void Widget::on_btn_logs_clicked()
 {
     current_info = INFO_LOG;
+    for(auto btn: hooks->buttons())
+        btn->setEnabled(false);
     start_update_table(current_info, current_hook, current_proto);
 }
 
@@ -229,5 +307,58 @@ void Widget::on_infotable_customContextMenuRequested(const QPoint &pos)
             }
         });
         menu.exec(QCursor::pos());
+    }
+}
+
+void Widget::on_view_slider_valueChanged(int value)
+{
+    if(log_models[current_proto]->rowCount() < log_length[current_proto])
+        show_row_range(ui->view_slider->value() * rows_per_show, (ui->view_slider->value() + 1) * rows_per_show);
+    else{
+        if(log_model_ptr[current_proto] + ui->view_slider->value() * rows_per_show < log_length[current_proto] &&
+           log_model_ptr[current_proto] + (ui->view_slider->value() + 1) * rows_per_show > log_length[current_proto]){
+            show_row_range(log_model_ptr[current_proto] + ui->view_slider->value() * rows_per_show, log_length[current_proto]);
+            show_row_range(0, log_model_ptr[current_proto] + (ui->view_slider->value() + 1) * rows_per_show - log_length[current_proto]);
+        }else{
+            show_row_range((log_model_ptr[current_proto] + ui->view_slider->value() * rows_per_show) % log_length[current_proto],
+                           (log_model_ptr[current_proto] + (ui->view_slider->value() + 1) * rows_per_show) % log_length[current_proto]);
+        }
+    }
+    ui->slider_val->setValue(ui->view_slider->value());
+}
+
+void Widget::on_view_slider_rangeChanged(int min, int max)
+{
+    Q_UNUSED(min);
+    ui->slider_val->setMaximum(max);
+    ui->slider_max->setText(QString::number(max));
+}
+
+void Widget::on_slider_val_editingFinished()
+{
+    ui->view_slider->setValue(ui->slider_val->value());
+}
+
+void Widget::on_slider_val_valueChanged(int arg1)
+{
+    ui->view_slider->setValue(ui->slider_val->value());
+}
+
+void Widget::on_btn_clearlog_clicked()
+{
+    int user_choice =
+            QMessageBox::question(this, "note", "This will delete all logs of this protocol, continue?");
+    if(user_choice == QMessageBox::No)
+        return;
+    if(!ioctl(devfd, IOCTL_CLEAR_LOG, current_proto)){
+        log_models[current_proto]->clear();
+        log_models[current_proto]->setColumnCount(log_headers[current_proto].length());
+        for(int k=0; k<log_headers[current_proto].length(); k++)
+            log_models[current_proto]->setHeaderData(k, Qt::Horizontal, log_headers[current_proto].at(k));
+        log_model_ptr[current_proto] = 0;
+
+        QMessageBox::information(this, "note", "Log cleared.");
+    }else{
+        QMessageBox::critical(this, "error", "Failed to clear log, unknown error occured.");
     }
 }

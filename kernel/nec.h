@@ -26,11 +26,10 @@
 
 
 // NAT_mode
-#define NAT_NONE    	0
+#define NAT_NONE        0
 #define NAT_STATIC 		1
 #define NAT_DYNAMIC 	2
 #define NAT_PAT     	3
-#define NAT_NOFILTER	4	// this mode will let the rule accept all the packet
 
 // hook points
 #define	HP_PRE_ROUTING		0
@@ -49,19 +48,25 @@ typedef struct ipport{
 	unsigned short port;
 }ipport;
 
-typedef struct NAT_static_config{
+typedef struct port_range{
+    unsigned short start;
+    unsigned short end;
+}port_range;
+
+typedef struct NAT_static_config{   // NOT SUPPORTED
 	unsigned int lan_ip;
 	unsigned int wan_ip;
 }NAT_static_config;
 
-typedef struct NAT_dynamic_config{
+typedef struct NAT_dynamic_config{  // NOT SUPPORTED
 	CIDR lan_ippool;
 	CIDR wan_ippool;
 }NAT_dynamic_config;
 
 typedef struct NAT_PAT_config{
-	ipport lan;
-	ipport wan;
+	CIDR lan;
+    unsigned wan;
+	port_range ports;
 }NAT_PAT_config;
 
 typedef struct NAT_config{
@@ -71,7 +76,9 @@ typedef struct NAT_config{
 		NAT_dynamic_config dc;
 		NAT_PAT_config pc;
 	}config;
-}NAT_config;
+    struct NAT_config* prev;
+    struct NAT_config* next;
+}nat_config;
 
 #define HOOK_CNT 5
 #define PROTOCOL_SUPPORTED 3
@@ -83,11 +90,6 @@ typedef struct NAT_config{
 #define RULE_ALL 3
 
 #define MAX_RANGE_IN_A_RULE 32
-
-typedef struct port_range{
-    unsigned short start;
-    unsigned short end;
-}port_range;
 
 // for functons handling connection.
 #define TCPUDP		0

@@ -46,14 +46,14 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-515</y>
+        <y>-857</y>
         <width>584</width>
-        <height>1370</height>
+        <height>1337</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="1" column="3">
-        <spacer name="horizontalSpacer_26">
+       <item row="4" column="3">
+        <spacer name="horizontalSpacer_15">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -68,13 +68,10 @@
          </property>
         </spacer>
        </item>
-       <item row="14" column="4">
-        <widget class="QSpinBox" name="udp_max_con">
-         <property name="minimum">
-          <number>5</number>
-         </property>
-         <property name="maximum">
-          <number>1024</number>
+       <item row="19" column="2">
+        <widget class="QLabel" name="label_25">
+         <property name="text">
+          <string>ICMP</string>
          </property>
         </widget>
        </item>
@@ -85,18 +82,15 @@
          </property>
         </widget>
        </item>
-       <item row="22" column="1" colspan="5">
-        <widget class="QLineEdit" name="rule_path">
-         <property name="cursor">
-          <cursorShape>IBeamCursor</cursorShape>
-         </property>
-         <property name="maxLength">
-          <number>256</number>
+       <item row="1" column="0" colspan="3">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>TCP FIN timeout</string>
          </property>
         </widget>
        </item>
-       <item row="17" column="0" colspan="2">
-        <spacer name="horizontalSpacer_10">
+       <item row="5" column="0" colspan="2">
+        <spacer name="horizontalSpacer_3">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -111,43 +105,8 @@
          </property>
         </spacer>
        </item>
-       <item row="8" column="5">
-        <widget class="QLabel" name="label_18">
-         <property name="text">
-          <string>seconds</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="0" colspan="5">
-        <widget class="QCheckBox" name="tcp_timeout_fixed">
-         <property name="text">
-          <string>TCP timeout fixed</string>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="2">
-        <widget class="QLabel" name="label_21">
-         <property name="text">
-          <string>UDP</string>
-         </property>
-        </widget>
-       </item>
-       <item row="21" column="0" colspan="5">
-        <widget class="QLabel" name="label_28">
-         <property name="text">
-          <string>File path for saving rules (by kernel)</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="5">
-        <widget class="QLabel" name="label_17">
-         <property name="text">
-          <string>seconds</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0" colspan="2">
-        <spacer name="horizontalSpacer_6">
+       <item row="9" column="3">
+        <spacer name="horizontalSpacer_19">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -156,11 +115,18 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>141</width>
+           <width>40</width>
            <height>20</height>
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="26" column="0" colspan="2">
+        <widget class="QLabel" name="label_30">
+         <property name="text">
+          <string>Default action</string>
+         </property>
+        </widget>
        </item>
        <item row="8" column="3">
         <spacer name="horizontalSpacer_18">
@@ -178,8 +144,22 @@
          </property>
         </spacer>
        </item>
-       <item row="13" column="0" colspan="2">
-        <spacer name="horizontalSpacer_7">
+       <item row="11" column="0" colspan="5">
+        <widget class="QCheckBox" name="udp_timeout_fixed">
+         <property name="text">
+          <string>UDP timeout fixed</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>seconds</string>
+         </property>
+        </widget>
+       </item>
+       <item row="19" column="0" colspan="2">
+        <spacer name="horizontalSpacer_12">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -194,8 +174,8 @@
          </property>
         </spacer>
        </item>
-       <item row="18" column="3">
-        <spacer name="horizontalSpacer_23">
+       <item row="15" column="3">
+        <spacer name="horizontalSpacer_27">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -220,25 +200,75 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="2">
-        <widget class="QLabel" name="label_16">
+       <item row="16" column="0" colspan="5">
+        <widget class="QLabel" name="label_23">
+         <property name="text">
+          <string>Max amount of logs</string>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="2">
+        <widget class="QLabel" name="label_26">
+         <property name="text">
+          <string>UDP</string>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="2">
+        <widget class="QLabel" name="label_20">
          <property name="text">
           <string>ICMP</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="4">
-        <widget class="QSpinBox" name="udp_initial_timeout">
-         <property name="minimum">
-          <number>1</number>
+       <item row="0" column="3">
+        <spacer name="horizontalSpacer_25">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
-         <property name="maximum">
-          <number>1800</number>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="14" column="3">
+        <spacer name="horizontalSpacer_21">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="4" column="5">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>seconds</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="0" colspan="2">
-        <spacer name="horizontalSpacer_5">
+       <item row="24" column="0" colspan="5">
+        <widget class="QLabel" name="label_31">
+         <property name="text">
+          <string>File path for saving logs automatically (by frontend)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="17" column="0" colspan="2">
+        <spacer name="horizontalSpacer_10">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -253,8 +283,25 @@
          </property>
         </spacer>
        </item>
-       <item row="1" column="5">
-        <widget class="QLabel" name="label_5">
+       <item row="23" column="0" colspan="2">
+        <widget class="QCheckBox" name="log_autosave">
+         <property name="text">
+          <string>Autosave for logs</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="17" column="2">
+        <widget class="QLabel" name="label_24">
+         <property name="text">
+          <string>TCP</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="5">
+        <widget class="QLabel" name="label_18">
          <property name="text">
           <string>seconds</string>
          </property>
@@ -756,184 +803,10 @@
          </item>
         </widget>
        </item>
-       <item row="8" column="2">
-        <widget class="QLabel" name="label_15">
-         <property name="text">
-          <string>UDP</string>
-         </property>
-        </widget>
-       </item>
-       <item row="24" column="0" colspan="5">
-        <widget class="QLabel" name="label_31">
-         <property name="text">
-          <string>File path for saving logs automatically (by frontend)</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="2">
-        <widget class="QLabel" name="label_8">
-         <property name="text">
-          <string>UDP</string>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="0" colspan="5">
-        <widget class="QLabel" name="label_19">
-         <property name="text">
-          <string>Max amount of connections</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="2">
-        <widget class="QLabel" name="label_10">
+       <item row="9" column="2">
+        <widget class="QLabel" name="label_16">
          <property name="text">
           <string>ICMP</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0" colspan="2">
-        <spacer name="horizontalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>141</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="17" column="3">
-        <spacer name="horizontalSpacer_22">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="9" column="4">
-        <widget class="QSpinBox" name="icmp_max_timeout">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>1800</number>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="5">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>seconds</string>
-         </property>
-        </widget>
-       </item>
-       <item row="18" column="2">
-        <widget class="QLabel" name="label_26">
-         <property name="text">
-          <string>UDP</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="5">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>seconds</string>
-         </property>
-        </widget>
-       </item>
-       <item row="25" column="1" colspan="5">
-        <widget class="QLineEdit" name="log_path">
-         <property name="cursor">
-          <cursorShape>IBeamCursor</cursorShape>
-         </property>
-         <property name="maxLength">
-          <number>256</number>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="3">
-        <spacer name="horizontalSpacer_19">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="0" column="5">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>seconds</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="5">
-        <widget class="QLabel" name="label_11">
-         <property name="text">
-          <string>seconds</string>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="0" colspan="2">
-        <spacer name="horizontalSpacer_9">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>141</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="7" column="4">
-        <widget class="QSpinBox" name="tcp_max_timeout">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>7200</number>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0" colspan="3">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Initial timeout</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="4">
-        <widget class="QSpinBox" name="tcp_syn_timeout">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>600</number>
          </property>
         </widget>
        </item>
@@ -969,8 +842,31 @@
          </property>
         </spacer>
        </item>
-       <item row="8" column="4">
-        <widget class="QSpinBox" name="udp_max_timeout">
+       <item row="7" column="0" colspan="2">
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>141</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="0" colspan="3">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Initial timeout</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="4">
+        <widget class="QSpinBox" name="udp_initial_timeout">
          <property name="minimum">
           <number>1</number>
          </property>
@@ -979,157 +875,42 @@
          </property>
         </widget>
        </item>
-       <item row="14" column="0" colspan="2">
-        <spacer name="horizontalSpacer_8">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>141</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="28" column="0">
-        <widget class="QPushButton" name="btn_savelog">
-         <property name="text">
-          <string>Save Logs</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="3">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>TCP FIN timeout</string>
-         </property>
-        </widget>
-       </item>
-       <item row="18" column="4">
-        <widget class="QSpinBox" name="udp_max_logs">
-         <property name="minimum">
-          <number>128</number>
-         </property>
-         <property name="maximum">
-          <number>65536</number>
-         </property>
-        </widget>
-       </item>
-       <item row="25" column="0">
-        <spacer name="horizontalSpacer_28">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>66</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="6" column="0" colspan="3">
-        <widget class="QLabel" name="label_13">
-         <property name="text">
-          <string>Max timeout</string>
-         </property>
-        </widget>
-       </item>
-       <item row="19" column="2">
-        <widget class="QLabel" name="label_25">
-         <property name="text">
-          <string>ICMP</string>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="2">
-        <widget class="QLabel" name="label_22">
-         <property name="text">
-          <string>TCP</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="4">
-        <widget class="QSpinBox" name="tcp_initial_timeout">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>7200</number>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="4">
-        <widget class="QSpinBox" name="icmp_max_con">
+       <item row="14" column="4">
+        <widget class="QSpinBox" name="udp_max_con">
          <property name="minimum">
           <number>5</number>
          </property>
          <property name="maximum">
-          <number>128</number>
+          <number>1024</number>
          </property>
         </widget>
        </item>
-       <item row="4" column="0" colspan="2">
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+       <item row="1" column="4">
+        <widget class="QSpinBox" name="tcp_fin_timeout">
+         <property name="minimum">
+          <number>1</number>
          </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
+         <property name="maximum">
+          <number>600</number>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>141</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+        </widget>
        </item>
-       <item row="11" column="0" colspan="5">
-        <widget class="QCheckBox" name="udp_timeout_fixed">
+       <item row="20" column="5">
+        <widget class="QSpinBox" name="max_rule">
+         <property name="minimum">
+          <number>8</number>
+         </property>
+         <property name="maximum">
+          <number>256</number>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="2">
+        <widget class="QLabel" name="label_14">
          <property name="text">
-          <string>UDP timeout fixed</string>
+          <string>TCP</string>
          </property>
         </widget>
-       </item>
-       <item row="5" column="0" colspan="2">
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>141</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="22" column="0">
-        <spacer name="horizontalSpacer_13">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>66</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
        <item row="18" column="0" colspan="2">
         <spacer name="horizontalSpacer_11">
@@ -1147,58 +928,42 @@
          </property>
         </spacer>
        </item>
-       <item row="7" column="2">
-        <widget class="QLabel" name="label_14">
+       <item row="14" column="2">
+        <widget class="QLabel" name="label_21">
          <property name="text">
-          <string>TCP</string>
+          <string>UDP</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="3">
-        <spacer name="horizontalSpacer_14">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="5" column="4">
-        <widget class="QSpinBox" name="icmp_initial_timeout">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>1800</number>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="4">
-        <widget class="QSpinBox" name="tcp_fin_timeout">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>600</number>
-         </property>
-        </widget>
-       </item>
-       <item row="20" column="0" colspan="4">
-        <widget class="QLabel" name="label_27">
+       <item row="5" column="5">
+        <widget class="QLabel" name="label_11">
          <property name="text">
-          <string>Max amount of rules per hook per protocol</string>
+          <string>seconds</string>
          </property>
         </widget>
        </item>
-       <item row="19" column="0" colspan="2">
-        <spacer name="horizontalSpacer_12">
+       <item row="25" column="1" colspan="5">
+        <widget class="QLineEdit" name="log_path">
+         <property name="cursor">
+          <cursorShape>IBeamCursor</cursorShape>
+         </property>
+         <property name="text">
+          <string>/etc/lhy_firewall/log_autosave</string>
+         </property>
+         <property name="maxLength">
+          <number>256</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="5">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>seconds</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0" colspan="2">
+        <spacer name="horizontalSpacer_6">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -1213,15 +978,35 @@
          </property>
         </spacer>
        </item>
-       <item row="17" column="2">
-        <widget class="QLabel" name="label_24">
+       <item row="1" column="5">
+        <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>TCP</string>
+          <string>seconds</string>
          </property>
         </widget>
        </item>
-       <item row="14" column="3">
-        <spacer name="horizontalSpacer_21">
+       <item row="5" column="4">
+        <widget class="QSpinBox" name="icmp_initial_timeout">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>1800</number>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="4">
+        <widget class="QSpinBox" name="icmp_max_timeout">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>1800</number>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="0" colspan="2">
+        <spacer name="horizontalSpacer_9">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -1230,14 +1015,24 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
+           <width>141</width>
            <height>20</height>
           </size>
          </property>
         </spacer>
        </item>
-       <item row="5" column="3">
-        <spacer name="horizontalSpacer_16">
+       <item row="13" column="4">
+        <widget class="QSpinBox" name="tcp_max_con">
+         <property name="minimum">
+          <number>5</number>
+         </property>
+         <property name="maximum">
+          <number>1024</number>
+         </property>
+        </widget>
+       </item>
+       <item row="17" column="3">
+        <spacer name="horizontalSpacer_22">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -1268,25 +1063,143 @@
          </property>
         </spacer>
        </item>
-       <item row="0" column="0" colspan="3">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>TCP SYN timeout</string>
+       <item row="14" column="0" colspan="2">
+        <spacer name="horizontalSpacer_8">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
-        </widget>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>141</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
-       <item row="19" column="4">
-        <widget class="QSpinBox" name="icmp_max_logs">
+       <item row="3" column="0" colspan="2">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>141</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="8" column="4">
+        <widget class="QSpinBox" name="udp_max_timeout">
          <property name="minimum">
-          <number>128</number>
+          <number>1</number>
          </property>
          <property name="maximum">
-          <number>4096</number>
+          <number>1800</number>
          </property>
         </widget>
        </item>
-       <item row="0" column="3">
-        <spacer name="horizontalSpacer_25">
+       <item row="8" column="0" colspan="2">
+        <spacer name="horizontalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>141</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="5" column="2">
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>ICMP</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="0" colspan="5">
+        <widget class="QCheckBox" name="tcp_timeout_fixed">
+         <property name="text">
+          <string>TCP timeout fixed</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="5">
+        <widget class="QLabel" name="label_17">
+         <property name="text">
+          <string>seconds</string>
+         </property>
+        </widget>
+       </item>
+       <item row="22" column="1" colspan="5">
+        <widget class="QLineEdit" name="rule_path">
+         <property name="cursor">
+          <cursorShape>IBeamCursor</cursorShape>
+         </property>
+         <property name="maxLength">
+          <number>256</number>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>UDP</string>
+         </property>
+        </widget>
+       </item>
+       <item row="21" column="0" colspan="5">
+        <widget class="QLabel" name="label_28">
+         <property name="text">
+          <string>File path for saving rules (by kernel)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="3">
+        <spacer name="horizontalSpacer_23">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="22" column="0">
+        <spacer name="horizontalSpacer_13">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>66</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="3" column="3">
+        <spacer name="horizontalSpacer_14">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -1308,18 +1221,81 @@
          </property>
         </widget>
        </item>
-       <item row="20" column="5">
-        <widget class="QSpinBox" name="max_rule">
+       <item row="15" column="4">
+        <widget class="QSpinBox" name="icmp_max_con">
          <property name="minimum">
-          <number>8</number>
+          <number>5</number>
          </property>
          <property name="maximum">
-          <number>256</number>
+          <number>128</number>
          </property>
         </widget>
        </item>
-       <item row="3" column="0" colspan="2">
-        <spacer name="horizontalSpacer">
+       <item row="20" column="0" colspan="4">
+        <widget class="QLabel" name="label_27">
+         <property name="text">
+          <string>Max amount of rules per hook per protocol</string>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="2">
+        <widget class="QLabel" name="label_22">
+         <property name="text">
+          <string>TCP</string>
+         </property>
+        </widget>
+       </item>
+       <item row="25" column="0">
+        <spacer name="horizontalSpacer_28">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>66</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="3">
+        <spacer name="horizontalSpacer_26">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0" colspan="3">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>TCP SYN timeout</string>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="4">
+        <widget class="QSpinBox" name="udp_max_logs">
+         <property name="minimum">
+          <number>128</number>
+         </property>
+         <property name="maximum">
+          <number>65536</number>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="2">
+        <spacer name="horizontalSpacer_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -1334,73 +1310,96 @@
          </property>
         </spacer>
        </item>
-       <item row="4" column="3">
-        <spacer name="horizontalSpacer_15">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="26" column="0" colspan="2">
-        <widget class="QLabel" name="label_30">
+       <item row="8" column="2">
+        <widget class="QLabel" name="label_15">
          <property name="text">
-          <string>Default action</string>
+          <string>UDP</string>
          </property>
         </widget>
        </item>
-       <item row="15" column="3">
-        <spacer name="horizontalSpacer_27">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="16" column="0" colspan="5">
-        <widget class="QLabel" name="label_23">
-         <property name="text">
-          <string>Max amount of logs</string>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="2">
-        <widget class="QLabel" name="label_20">
-         <property name="text">
-          <string>ICMP</string>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="4">
-        <widget class="QSpinBox" name="tcp_max_con">
+       <item row="3" column="4">
+        <widget class="QSpinBox" name="tcp_initial_timeout">
          <property name="minimum">
-          <number>5</number>
+          <number>1</number>
          </property>
          <property name="maximum">
-          <number>1024</number>
+          <number>7200</number>
          </property>
         </widget>
        </item>
-       <item row="23" column="0" colspan="2">
-        <widget class="QCheckBox" name="log_autosave">
+       <item row="12" column="0" colspan="5">
+        <widget class="QLabel" name="label_19">
          <property name="text">
-          <string>Autosave for logs</string>
+          <string>Max amount of connections</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="4">
+        <widget class="QSpinBox" name="tcp_max_timeout">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>7200</number>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="3">
+        <spacer name="horizontalSpacer_16">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="4">
+        <widget class="QSpinBox" name="tcp_syn_timeout">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>600</number>
+         </property>
+        </widget>
+       </item>
+       <item row="19" column="4">
+        <widget class="QSpinBox" name="icmp_max_logs">
+         <property name="minimum">
+          <number>128</number>
+         </property>
+         <property name="maximum">
+          <number>4096</number>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="0" colspan="2">
+        <spacer name="horizontalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>141</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="6" column="0" colspan="3">
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>Max timeout</string>
          </property>
         </widget>
        </item>

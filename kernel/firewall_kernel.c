@@ -54,7 +54,7 @@ unsigned int tcp_handler(void* priv, struct sk_buff* skb,
     pkg.myhdr = get_tcp_header(ip, tcp);
     pkg.hash = tu_hash_header(pkg.myhdr);
 
-    spin_lock(&tcp_handler_lock);
+    spin_lock_bh(&tcp_handler_lock);
     mayexist = (connection*)find_con(pkg.myhdr, pkg.hash, RULE_TCP);
     if(mayexist != NULL){
         size_t ts = this_moment_usec();
@@ -75,11 +75,11 @@ unsigned int tcp_handler(void* priv, struct sk_buff* skb,
     }
     goto tcp_drop;
     tcp_accept:
-    spin_unlock(&tcp_handler_lock);
+    spin_unlock_bh(&tcp_handler_lock);
     kfree(pkg.myhdr);
     return NF_ACCEPT;
     tcp_drop:
-    spin_unlock(&tcp_handler_lock);
+    spin_unlock_bh(&tcp_handler_lock);
     printk("A TCP packet dropped.");
     kfree(pkg.myhdr);
     return NF_DROP;     // must be a complete TCP procedure
@@ -98,7 +98,7 @@ unsigned int udp_handler(void* priv, struct sk_buff* skb,
     pkg.myhdr = get_udp_header(ip, udp);
     pkg.hash = tu_hash_header(pkg.myhdr);
 
-    spin_lock(&udp_handler_lock);
+    spin_lock_bh(&udp_handler_lock);
     mayexist = (connection*)find_con(pkg.myhdr, pkg.hash, RULE_UDP);
     if(mayexist != NULL){
         size_t ts = this_moment_usec();
@@ -118,11 +118,11 @@ unsigned int udp_handler(void* priv, struct sk_buff* skb,
     }
     goto udp_drop;
     udp_accept:
-    spin_unlock(&udp_handler_lock);
+    spin_unlock_bh(&udp_handler_lock);
     kfree(pkg.myhdr);
     return NF_ACCEPT;
     udp_drop:
-    spin_unlock(&udp_handler_lock);
+    spin_unlock_bh(&udp_handler_lock);
     printk("A UDP packet dropped.");
     kfree(pkg.myhdr);
     return NF_DROP;
@@ -141,7 +141,7 @@ unsigned int icmp_handler(void* priv, struct sk_buff* skb,
     pkg.myhdr = get_icmp_header(ip);
     pkg.hash = icmp_hash_header(pkg.myhdr);
 
-    spin_lock(&icmp_handler_lock);
+    spin_lock_bh(&icmp_handler_lock);
     mayexist = (icmp_connection*)find_con(pkg.myhdr, pkg.hash, RULE_ICMP);
     if(mayexist != NULL){
         size_t ts = this_moment_usec();
@@ -161,11 +161,11 @@ unsigned int icmp_handler(void* priv, struct sk_buff* skb,
     }
     goto icmp_drop;
     icmp_accept:
-    spin_unlock(&icmp_handler_lock);
+    spin_unlock_bh(&icmp_handler_lock);
     kfree(pkg.myhdr);
     return NF_ACCEPT;
     icmp_drop:
-    spin_unlock(&icmp_handler_lock);
+    spin_unlock_bh(&icmp_handler_lock);
     printk("A ICMP packet dropped.");
     kfree(pkg.myhdr);
     return NF_DROP;
@@ -189,6 +189,23 @@ unsigned int packet_monitor(void * priv,struct sk_buff *skb,const struct nf_hook
 	}
 }
 
+unsigned int nat_in_monitor(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
+//    struct iphdr* ip = ip_hdr(skb);
+//    switch(ip->protocol){
+//        case IPPROTO_TCP:{
+//            if(is_conflict_with_pat(ntohl(ip->saddr)));
+//        }
+//    }
+    return NF_ACCEPT;
+}
+
+unsigned int nat_out_monitor(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
+//    struct iphdr* ip = ip_hdr(skb);
+//    switch(ip->protocol){
+//
+//    }
+    return NF_ACCEPT;
+}
 
 unsigned int pre_routing_hook(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
     return packet_monitor(priv, skb, state, HP_PRE_ROUTING);
@@ -210,15 +227,13 @@ unsigned int post_routing_hook(void * priv,struct sk_buff *skb,const struct nf_h
     return packet_monitor(priv, skb, state, HP_POST_ROUTING);
 }
 
+unsigned int pre_routing_nat_hook(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
+    return nat_in_monitor(priv, skb, state);
+}
 
-
-// unsigned int pre_routing_nat_hook(void *priv,struct sk_buff *skb,const struct nf_hook_state * state){
-//     //get dst_ip check whether need DNAT
-//     if(exist_nat()){
-//         DNAT_change();
-//     }
-//     return NF_ACCEPT;
-// }
+unsigned int post_routing_nat_hook(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
+    return nat_out_monitor(priv, skb, state);
+}
 
 // unsigned int post_routing_nat_hook(void *priv,struct sk_buff *skb,const struct nf_hook_state * state){
 //     //get src_ip check whether need SNAT
@@ -229,18 +244,18 @@ unsigned int post_routing_hook(void * priv,struct sk_buff *skb,const struct nf_h
 // }
 
 //nat
-// static struct nf_hook_ops pre_routing_nat={
-//     .hook = pre_routing_nat_hook,
-//     .pf = PF_INET,
-//     .hooknum = NF_INET_PRE_ROUTING,
-//     .priority = NF_IP_PRI_NAT_DST
-// };
-// static struct nf_hook_ops post_routing_nat = {
-//     .hook = post_routing_nat_hook,
-//     .pf = PF_INET,
-//     .hooknum = NF_INET_POST_ROUTING,
-//     .priority = NF_IP_PRI_NAT_SRC,
-// };
+static struct nf_hook_ops pre_routing_nat={
+ .hook = pre_routing_nat_hook,
+ .pf = PF_INET,
+ .hooknum = NF_INET_PRE_ROUTING,
+ .priority = NF_IP_PRI_NAT_DST
+};
+static struct nf_hook_ops post_routing_nat = {
+ .hook = post_routing_nat_hook,
+ .pf = PF_INET,
+ .hooknum = NF_INET_POST_ROUTING,
+ .priority = NF_IP_PRI_NAT_SRC,
+};
 //connect
 static struct nf_hook_ops pre_routing_op = {
     .hook = pre_routing_hook,

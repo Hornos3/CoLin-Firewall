@@ -55,6 +55,8 @@ private slots:
 
     void on_btn_savelog_clicked();
 
+    void on_log_autosave_stateChanged(int arg1);
+
 private:
     Ui::settings *ui;
 };

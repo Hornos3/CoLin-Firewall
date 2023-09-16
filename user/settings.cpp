@@ -253,3 +253,11 @@ void settings::on_btn_savelog_clicked()
     ioctl(devfd, IOCTL_WRITE_LOG, savepath);
     QMessageBox::information(this, "log saved", "Log already saved into " + savepath + ".");
 }
+
+void settings::on_log_autosave_stateChanged(int arg1)
+{
+    Q_UNUSED(arg1);
+    autosave_log = ui->log_autosave->isChecked();
+    if(!autosave_log)
+        ui->log_path->setEnabled(false);
+}

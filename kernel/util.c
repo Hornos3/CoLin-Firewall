@@ -255,11 +255,61 @@ fwrule* rule_indexer(unsigned hp, unsigned proto, unsigned index){
     return ptr;
 }
 
+void inlink_nat(nat_config* new_rule){
+    if(nat_rules == NULL){
+        nat_rules = new_rule;
+        return;
+    }
+    nat_rules->prev = new_rule;
+    new_rule->next = nat_rules;
+    new_rule->prev = NULL;
+    nat_rules = new_rule;
+}
+
+void delink_nat(nat_config* target){
+    if(!target)
+        return;
+    if(target == nat_rules){
+        nat_rules = target->next;
+        nat_rules->prev = NULL;
+        kfree(target);
+    }else if(target->next == NULL){
+        target->prev->next = NULL;
+        kfree(target);
+    }else{
+        target->next->prev = target->prev;
+        target->prev->next = target->next;
+        kfree(target);
+    }
+}
+
+nat_config* nat_indexer(nat_config* rule){
+    nat_config* ptr = nat_rules;
+    while(ptr){
+        if(ptr->NAT_mode != rule->NAT_mode){
+            ptr = ptr->next;
+            continue;
+        }
+        switch(ptr->NAT_mode){
+        case NAT_PAT:
+            if(!memcmp(rule, ptr, sizeof(nat_config)))
+                return ptr;
+            break;
+        default:
+            break;
+        }
+        ptr = ptr->next;
+    }
+    return NULL;
+}
+
 /******************** range functions ********************/
 
 bool is_inCIDR(unsigned int ip, CIDR* cidr){
     if(cidr->mask == 0)
         return true;
+    if(cidr->mask == 32)
+        return ip == cidr->ip;
     return !((ip ^ cidr->ip) & (0xFFFFFFFF << (32 - cidr->mask)));
 }
 
@@ -456,7 +506,7 @@ void print_binary(char* buf, int length){
     for(int i=0; i<(length % 16 == 0 ? length / 16 : length / 16 + 1); i++){
         char temp_buffer[0x10];
         memset(temp_buffer, '\0', 0x10);
-        snprintf(temp_buffer, 80, "%#5x", index);
+        snprintf(temp_buffer, 0x10, "%#5x", index);
         strcpy(output_buffer, temp_buffer);
         output_buffer[5] = ' ';
         output_buffer[6] = '|';
@@ -634,11 +684,15 @@ bool load_all_rules(const char* filename){  // All existing rules will be delete
     while((size_t)ifh_ptr - (size_t)content < size - sizeof(default_strategy)){
         for(int i=0; i<ifh_ptr->rule_num; i++){
             rule_ptr = (fwrule_user*)((size_t)ifh_ptr + sizeof(rule_ifh) + sizeof(fwrule_user) * i);
-            if(this_moment_usec() / 1000000 >= rule_ptr->timeout)       // timeout, this rule is now invalid
+            if(this_moment_usec() / 1000000 >= rule_ptr->timeout && rule_ptr->timeout != 0) {       // timeout
+                printk("protocol %d, hook %d, a rule timeout.", ifh_ptr->proto, ifh_ptr->hook);
                 continue;
+            }
             fwrule* new_rule = (fwrule*)kmalloc(sizeof(fwrule), GFP_KERNEL);
             memcpy((void*)new_rule, (void*)rule_ptr, sizeof(fwrule_user));
             inlinkend_rule(new_rule, ifh_ptr->hook, ifh_ptr->proto);
+            printk("protocol %d, hook %d, a rules added.", ifh_ptr->proto, ifh_ptr->hook);
+            rule_cnt[ifh_ptr->hook][ifh_ptr->proto]++;
         }
         ifh_ptr = (rule_ifh*)((size_t)ifh_ptr + sizeof(rule_ifh) + sizeof(fwrule_user) * ifh_ptr->rule_num);
     }
@@ -685,4 +739,34 @@ rule_ifh* get_rule_for_output(unsigned hook, unsigned proto){
 
     spin_unlock(&rule_lock);
     return buf;
+}
+
+/******************** nat functions ********************/
+nat_config* match_pat(unsigned ip, unsigned short port){
+    nat_config* ptr = nat_rules;
+    while(ptr){
+        if(ptr->NAT_mode == NAT_PAT){
+            if(is_inCIDR(ip, &ptr->config.pc.lan) && port >= ptr->config.pc.ports.start &&
+                port <= ptr->config.pc.ports.end)
+                return ptr;
+        }
+        ptr = ptr->next;
+    }
+    return NULL;
+}
+
+bool is_conflict_with_pat(unsigned ip, unsigned short port){
+    nat_config* ptr = nat_rules;
+    char port_may_conflict = 0;
+    while(ptr){
+        if(ptr->NAT_mode == NAT_PAT){
+            if(is_inCIDR(ip, &ptr->config.pc.lan) && port >= ptr->config.pc.ports.start &&
+               port <= ptr->config.pc.ports.end)        // This packet is pat needed, not conflict
+                return false;
+            else if(port >= ptr->config.pc.ports.start && port <= ptr->config.pc.ports.end)
+                port_may_conflict = 1;
+        }
+        ptr = ptr->next;
+    }
+    return port_may_conflict;
 }

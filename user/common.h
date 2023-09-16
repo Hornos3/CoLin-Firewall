@@ -1,10 +1,13 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <QDir>
 #include <QFile>
 #include <QDebug>
 #include <fcntl.h>
+#include <QProcess>
 #include <QDateTime>
+#include <QFileInfo>
 #include <sys/ioctl.h>
 #include <QMessageBox>
 #include <QStandardItemModel>
@@ -109,8 +112,8 @@ typedef struct NAT_dynamic_config{
 }NAT_dynamic_config;
 
 typedef struct NAT_PAT_config{
-    ipport lan;
-    ipport wan;
+    CIDR lan;
+    port_range wan;
 }NAT_PAT_config;
 
 typedef struct NAT_config{
@@ -134,7 +137,6 @@ typedef struct lhy_firewall_rule_user{
     unsigned int dst_port_len;
     unsigned action;	// 0 for reject, 1 for accept
     // NAT content
-    unsigned char NAT_mode;
     NAT_config nat_config;
     unsigned timeout;       // duration from user, timestamp to user, 0 for no expiration
     unsigned hook;
@@ -245,6 +247,7 @@ typedef struct config_user{
 extern QStandardItemModel* connection_models[PROTOCOL_SUPPORTED];
 extern QStandardItemModel* rule_models[HOOK_CNT][PROTOCOL_SUPPORTED];
 extern QStandardItemModel* log_models[PROTOCOL_SUPPORTED];
+extern unsigned log_model_ptr[PROTOCOL_SUPPORTED];
 extern int devfd;
 extern int frontend_update_interval;
 
@@ -260,6 +263,9 @@ extern unsigned max_con[PROTOCOL_SUPPORTED];                        // 10-12
 extern unsigned log_length[PROTOCOL_SUPPORTED];                     // 13-15
 extern unsigned max_rule;                                           // 16
 extern unsigned default_strategy[HOOK_CNT][PROTOCOL_SUPPORTED];
+extern unsigned rows_per_show;
+extern bool autosave_log;
+extern QString autosave_path;
 
 #define SET_DEFAULT(hook, proto, bit, x) \
     ((default_strategy[hook][proto] & (0x7F ^ (1 << bit))) | (x << bit))
@@ -292,4 +298,7 @@ void print_binary(char*, int);
 bool set_default_strategy(unsigned hook, unsigned proto, unsigned bit, bool val);
 QString usectime_tostring(unsigned long long time);
 QString sectime_tostring(unsigned long long time);
+int shell(QString command, QString success_message = "", QString fail_message = "");
+bool save_file_valid(QString path);
+QString readall(QString path);
 #endif // COMMON_H

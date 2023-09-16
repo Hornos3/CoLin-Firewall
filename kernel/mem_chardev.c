@@ -38,7 +38,7 @@ ssize_t cdev_write(struct file* file, const char* __user buf, size_t size, loff_
 // command_code = 0b1111001: write connections into a file, filename is in (void*)arg.
 //                           the last 3 bit has the same function as 0b1111000.
 // command_code = 0b1111010: clear logs, arg = RULE_xxx, clear logs for a 
-//                           certain protocol; arg = 0, clear all.
+//                           certain protocol; arg = 3, clear all.
 // command_code = 0b1111011: return ALL the saved logs. Saved in (void*)arg.
 //                           THIS COMMAND IS STRONGLY NOT RECOMMENDED FOR THE COPY
 //                           CONTENT MAY BE HUGE WHICH REDUCES THE EFFICIENCY OF
@@ -78,6 +78,7 @@ ssize_t cdev_write(struct file* file, const char* __user buf, size_t size, loff_
 #define LSB(x) ((x) & 0b111)
 long cdev_ioctl(struct file* file, unsigned int command_code, 
                 unsigned long arg){
+    // printk("Command code = %d, arg = %lx\n", command_code, arg);
     unsigned* configs[] = {
             &TCP_syn_timeout,
             &TCP_fin_timeout,
@@ -135,7 +136,7 @@ long cdev_ioctl(struct file* file, unsigned int command_code,
             if(command_code == 0x78){
                 if(copy_to_user((void*)PTR(arg), to_user, to_user->total_size) != 0)
                     return -1;
-                printk(KERN_INFO "Connection data sent to user: %zd bytes\n", to_user->total_size);
+                // printk(KERN_INFO "Connection data sent to user: %zd bytes\n", to_user->total_size);
                 break;
             }else{
                 char* filename = get_string_from_user((char*)PTR(arg));
@@ -144,15 +145,15 @@ long cdev_ioctl(struct file* file, unsigned int command_code,
         }
         case 0x7A:      // 0b11010
             clear_log(arg);
-            break;
+            return 0;
         // logs: struct + icmp logs + tcp logs + udp logs
         case 0x7B:      // 0b11011, if copy failed, return -1
         case 0x7C:{     // 0b11100, if write failed, return -1
-            log_touser* to_user = get_logs(PTR(arg));
+            log_touser* to_user = get_logs(arg);
             if(command_code == 0x7B){
                 if(copy_to_user((void*)PTR(arg), (char*)to_user, to_user->total_size) != 0)
                     return -1;
-                printk(KERN_INFO "Log data sent to user: %zd bytes\n", to_user->total_size);
+                // printk(KERN_INFO "Log data sent to user: %zd bytes\n", to_user->total_size);
                 break;
             }else if(command_code == 0x7C){
                 char* filename = get_string_from_user((char*)PTR(arg));
@@ -163,7 +164,7 @@ long cdev_ioctl(struct file* file, unsigned int command_code,
             log_touser* to_user = get_new_logs(arg);
             if(copy_to_user((void*)PTR(arg), (char*)to_user, to_user->total_size) != 0)
                 return -1;
-            printk(KERN_INFO "Log data sent to user: %zd bytes\n", to_user->total_size);
+            // printk(KERN_INFO "Log data sent to user: %zd bytes\n", to_user->total_size);
             return 0;
         }
         case 0x7E:{
@@ -191,7 +192,7 @@ long cdev_ioctl(struct file* file, unsigned int command_code,
                 kfree(data);
                 return -1;
             }
-            printk(KERN_INFO "Rule data sent to user: %ld bytes", RULEOUT_SIZE(data));
+            // printk(KERN_INFO "Rule data sent to user: %ld bytes", RULEOUT_SIZE(data));
             kfree(data);
             return 0;
         }
@@ -227,8 +228,7 @@ con_touser* get_connections(unsigned long arg){
         size_t size_needed = off[2] + sizeof(icmp_con_touser) * con_count[RULE_ICMP];
         if(size_needed > MAX_CON_BUFLEN(proto)){
             printk(KERN_ERR "Copy size abnormal, there may be a bug in this kernel module! size: %lx\n", size_needed);
-            to_user->total_size = 0;
-            return to_user;
+            return NULL;
         }
         to_user = (con_touser*)kmalloc(size_needed, GFP_KERNEL);
         to_user->total_size = size_needed;

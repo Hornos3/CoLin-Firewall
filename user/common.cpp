@@ -3,6 +3,7 @@
 QStandardItemModel* connection_models[PROTOCOL_SUPPORTED];
 QStandardItemModel* rule_models[HOOK_CNT][PROTOCOL_SUPPORTED];
 QStandardItemModel* log_models[PROTOCOL_SUPPORTED];
+unsigned log_model_ptr[PROTOCOL_SUPPORTED] = {0, 0, 0};     // represents the index of the earlist record
 int devfd;
 int frontend_update_interval = 1000;    //msec
 
@@ -18,6 +19,9 @@ unsigned log_length[PROTOCOL_SUPPORTED];                     // 13-15
 unsigned max_rule;
 char rule_path[256];
 unsigned default_strategy[HOOK_CNT][PROTOCOL_SUPPORTED];
+unsigned rows_per_show = 20;
+bool autosave_log = true;   // save log through GUI, not kernel
+QString autosave_path = "/etc/lhy_firewall/log_autosave";   // a directory
 
 const QString hook_names[HOOK_CNT] = {
     "PRE_ROUTING",
@@ -121,4 +125,49 @@ QString sectime_tostring(unsigned long long time){
             .arg(datetime.time().minute(), 2, 10, QLatin1Char('0'))
             .arg(datetime.time().second(), 2, 10, QLatin1Char('0'));
     return ret;
+}
+
+int shell(QString command, QString success_message, QString fail_message){
+    QProcess process;
+    process.start(command);
+    if(process.waitForStarted() && process.waitForFinished()){
+        QByteArray output = process.readAllStandardOutput();
+        QString outputString(output);
+        qDebug() << "Command output: " + outputString;
+        int exitCode = process.exitCode();
+        qDebug() << "Process " + command + " returns " + QString::number(exitCode);
+        if(exitCode == 0)
+            qDebug() << success_message;
+        else
+            qDebug() << fail_message;
+        return exitCode;
+    }else{
+        qDebug() << fail_message;
+        return -1;
+    }
+}
+
+bool save_file_valid(QString path){
+    QFileInfo fi(path);
+    if(fi.exists())
+        return true;
+    if(!QDir::isAbsolutePath(path))
+        return false;
+    QStringList paths = path.split("/");
+    paths.removeLast();
+    QString parent_path = paths.join("/");
+    return QFileInfo(parent_path).exists();
+}
+
+QString readall(QString path){
+    QFile file(path);
+    if(file.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QTextStream stream(&file);
+        QString content = stream.readAll();
+        file.close();
+        return content;
+    }else{
+        qDebug() << "Failed to open" << path.toStdString().c_str();
+        return "";
+    }
 }

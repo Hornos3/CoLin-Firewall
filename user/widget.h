@@ -3,13 +3,16 @@
 
 #include <QFile>
 #include <QMenu>
+#include <cmath>
 #include <cerrno>
 #include <QTimer>
 #include <string>
 #include <QAction>
+#include <QThread>
 #include <QWidget>
 #include <fcntl.h>
 #include <QString>
+#include <QProcess>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <QPushButton>
@@ -38,6 +41,9 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
+protected:
+    void closeEvent(QCloseEvent* e);
+
 private slots:
     void on_pre_routing_clicked();
     void on_local_out_clicked();
@@ -62,6 +68,16 @@ private slots:
 
     void on_infotable_customContextMenuRequested(const QPoint &pos);
 
+    void on_view_slider_valueChanged(int value);
+
+    void on_view_slider_rangeChanged(int min, int max);
+
+    void on_slider_val_editingFinished();
+
+    void on_slider_val_valueChanged(int arg1);
+
+    void on_btn_clearlog_clicked();
+    
 private:
     Ui::Widget *ui;
     QButtonGroup* hooks;
@@ -70,6 +86,8 @@ private:
     QPushButton* last_pressed_hook = nullptr;
     QPushButton* last_pressed_info = nullptr;
     QPushButton* last_pressed_proto = nullptr;
+    QThread* refresh_thread;
+    QStandardItemModel* selected_model;
     QTimer update_timer;
     unsigned current_proto = 0;
     unsigned current_hook = 0;
@@ -98,6 +116,7 @@ private:
     void get_all_configs();
     void get_rule_path();
     void set_rule_path(QString path);
+    void show_row_range(unsigned start, unsigned end);
 
     void start_update_table(unsigned, unsigned, unsigned);
     void update_table(unsigned, unsigned, unsigned);

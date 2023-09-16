@@ -15,9 +15,6 @@ typedef struct lhy_firewall_rule_user{
     unsigned int src_port_len;
     unsigned int dst_port_len;
     unsigned action;	// 0 for reject, 1 for accept
-    // NAT content
-    unsigned char NAT_mode;
-    NAT_config nat_config;
     unsigned timeout;       // duration from user, timestamp to user, 0 for no expiration
     unsigned hook;
 }fwrule_user;
@@ -34,9 +31,6 @@ typedef struct lhy_firewall_rule{
 	unsigned src_port_len;
 	unsigned dst_port_len;
     unsigned action;	// 0 for reject, 1 for accept
-	// NAT content
-	unsigned char NAT_mode;
-	NAT_config nat_config;
     unsigned timeout;
     unsigned hook;
 
@@ -71,6 +65,8 @@ bool add_rule(rule_tbi*);
 bool del_rule(rule_tbd*);
 bool del_all_rule(unsigned, unsigned);
 void rule_timer_callback(struct timer_list* t);
+bool add_nat(nat_config*);
+bool del_nat(nat_config*);
 
 void del_all_timer(void);
 

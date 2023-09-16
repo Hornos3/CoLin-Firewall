@@ -40,13 +40,8 @@ typedef struct ICMP_connection{
 }icmp_connection;
 
 void* find_con(void*, size_t, unsigned);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 void icmp_timer_callback(struct timer_list*);
 void tu_timer_callback(struct timer_list*);
-#else
-void icmp_timer_callback(unsigned long);
-void tu_timer_callback(unsigned long);
-#endif
 void add_connection(void*, unsigned, bool);
 void del_tu_connection(connection*, bool);
 void del_icmp_connection(icmp_connection*, bool);

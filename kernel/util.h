@@ -26,6 +26,9 @@ void delink_rule(fwrule*);
 void inlink_rule(fwrule*, unsigned, unsigned, unsigned);
 void inlinkend_rule(fwrule*, unsigned, unsigned);
 fwrule* rule_indexer(unsigned, unsigned, unsigned);
+void inlink_nat(nat_config*);
+void delink_nat(nat_config*);
+nat_config* nat_indexer(nat_config*);
 bool save_all_rules(const char*);
 bool load_all_rules(const char*);
 void del_all_rules(void);
@@ -53,5 +56,8 @@ void udp_bucket_status(void);
 void icmp_bucket_status(void);
 unsigned count_tu_bucket(connection*);
 unsigned count_icmp_bucket(icmp_connection*);
+
+nat_config* match_pat(unsigned, unsigned short);
+bool is_conflict_with_pat(unsigned, unsigned short);
 
 # endif

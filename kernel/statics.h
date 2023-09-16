@@ -51,6 +51,10 @@ extern unsigned new_log_cnt[PROTOCOL_SUPPORTED];
 extern spinlock_t rule_lock;
 extern fwrule* rules[HOOK_CNT][PROTOCOL_SUPPORTED];
 extern fwrule* rules_end[HOOK_CNT][PROTOCOL_SUPPORTED];
+extern nat_config* nat_rules;
+extern spinlock_t nat_lock;
+extern unsigned nat_cnt;
+extern unsigned max_nat;
 extern unsigned default_strategy[HOOK_CNT][PROTOCOL_SUPPORTED];
 extern unsigned rule_cnt[HOOK_CNT][PROTOCOL_SUPPORTED];
 extern unsigned max_rule;                                           // 16

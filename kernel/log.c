@@ -83,18 +83,24 @@ void new_udp_log(udp_pkt* pkt, unsigned char action){
 }
 
 void clear_log(unsigned proto){
+    if(proto > PROTOCOL_SUPPORTED)
+        return;
+    spin_lock(&log_lock);
     switch(proto){
         case RULE_ALL:
             for(int i=0; i<PROTOCOL_SUPPORTED; i++){
                 log_cnt[i] = 0;
                 log_rewind[i] = 0;
                 new_log_cnt[i] = 0;
+                next_log_ptr[i] = 0;
             }
             break;
         default:
             log_cnt[proto] = 0;
             log_rewind[proto] = 0;
             new_log_cnt[proto] = 0;
+            next_log_ptr[proto] = 0;
             break;
     }
+    spin_unlock(&log_lock);
 }

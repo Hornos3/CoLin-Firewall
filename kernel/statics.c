@@ -30,12 +30,10 @@ unsigned log_length[PROTOCOL_SUPPORTED] = {65536, 65536, 4096};
 void* logs[PROTOCOL_SUPPORTED] = {NULL, NULL, NULL};
 unsigned log_cnt[PROTOCOL_SUPPORTED] = {0, 0, 0};
 bool log_rewind[PROTOCOL_SUPPORTED] = {0, 0, 0};
-
+// these variables can make copy_to_user copy less data every time and improves efficiency.
+unsigned new_log_cnt[PROTOCOL_SUPPORTED] = {0, 0, 0};
 spinlock_t log_lock = {};
 
-// these variables can make copy_to_user copy less data every time and improves
-// efficiency.
-unsigned new_log_cnt[PROTOCOL_SUPPORTED] = {0, 0, 0};
 
 // rules
 
@@ -44,6 +42,11 @@ fwrule* rules[HOOK_CNT][PROTOCOL_SUPPORTED] = {{NULL},};
 fwrule* rules_end[HOOK_CNT][PROTOCOL_SUPPORTED] = {{NULL},};
 // bit 0: default accept/reject
 // bit 1: default log/no log
+nat_config* nat_rules = NULL;
+spinlock_t nat_lock = {};
+size_t port_bitmap[65536 / 64] = {0};
+unsigned nat_cnt = 0;
+unsigned max_nat = 64;
 unsigned default_strategy[HOOK_CNT][PROTOCOL_SUPPORTED] = {{0},};
 unsigned rule_cnt[HOOK_CNT][PROTOCOL_SUPPORTED] = {{0}, };
 unsigned max_rule = 256;    // maximum length of each rule linked list
@@ -61,5 +64,5 @@ char* proto_names[3] = {
     "TCP", "UDP", "ICMP"
 };
 
-char rule_path[256] = "/tmp/lhy_firewall_rules.bak";
-char* default_rule_path = "/tmp/lhy_firewall_rules.bak";
+char rule_path[256] = "/etc/lhy_firewall/rules";
+char* default_rule_path = "/tmp/lhy_firewall/rules";

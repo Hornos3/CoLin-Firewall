@@ -64,6 +64,7 @@ bool add_rule(rule_tbi* tbi){
     inlink_rule(new_rule, from_user->insert_pos, from_user->rule.hook, from_user->rule.protocol);
     rule_cnt[from_user->rule.hook][from_user->rule.protocol]++;
     spin_unlock(&rule_lock);    // UNLOCK
+
     if(from_user->rule.timeout != 0) {
         timer_setup(&new_rule->timer, rule_timer_callback, 0);
         mod_timer(&new_rule->timer, HZ * from_user->rule.timeout);
@@ -176,4 +177,44 @@ bool del_all_rule(unsigned proto, unsigned hook){
         printk(KERN_INFO "Deleted all rules in all hooks for all protocols.\n");
         return true;
     }
+}
+
+bool add_nat(nat_config* new_conf){
+    if(nat_cnt == max_nat){
+        printk("Too many nat rules!");
+        return false;
+    }
+    nat_config* from_user = (nat_config*)kmalloc(sizeof(nat_config), GFP_KERNEL);
+    if(copy_from_user(from_user, new_conf, sizeof(nat_config))){
+        printk("Failed to read nat config from user!");
+        return false;
+    }
+
+    spin_lock(&nat_lock);
+    nat_cnt++;
+    inlink_nat(from_user);
+    spin_unlock(&nat_lock);
+
+#ifdef DEBUG_MODE
+    char* srcip = ip_ntoa(from_user->config.pc.lan.ip);
+    char* dstip = ip_ntoa(from_user->config.pc.wan);
+    printk(KERN_INFO "Successfully added a nat rule for lan %s/%d, wan %s, port %d~%d\n", srcip,
+            from_user->config.pc.lan.mask, dstip, from_user->config.pc.ports.start, from_user->config.pc.ports.end);
+    kfree(srcip);
+    kfree(dstip);
+#endif
+}
+
+bool del_nat(nat_config* target){
+    if(nat_cnt == 0)
+        return false;
+    spin_lock(&nat_lock);
+    nat_config* t = nat_indexer(target);
+    if(!t){
+        spin_unlock(&nat_lock);
+        return false;
+    }
+    delink_nat(t);
+    spin_unlock(&nat_lock);
+    return true;
 }
