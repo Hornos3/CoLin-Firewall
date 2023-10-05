@@ -56,20 +56,36 @@ unsigned int tcp_handler(void* priv, struct sk_buff* skb,
 
     spin_lock_bh(&tcp_handler_lock);
     mayexist = (connection*)find_con(pkg.myhdr, pkg.hash, RULE_TCP);
+
     if(mayexist != NULL){
-        size_t ts = this_moment_usec();
-        mayexist->last = ts;
+        mayexist->last = this_moment_usec();
         if(mayexist->log)
-            new_tcp_log(&pkg, ACCEPT);
+            new_tcp_log(&pkg, ACCEPT, hook_point);
         reset_timer(mayexist, RULE_TCP, get_next_timeout(mayexist->timeout, RULE_TCP));
         mayexist->timeout = get_next_timeout(mayexist->timeout, RULE_TCP);
         goto tcp_accept;
     }else{
         unsigned match = match_rules(pkg.myhdr, hook_point, RULE_TCP);
         if(match & 2)
-            new_tcp_log(&pkg, match & 1);
+            new_tcp_log(&pkg, match & 1, hook_point);
         if(match & 1){
-            add_connection(&pkg, RULE_TCP, match & 2);
+            connection* new_con = add_connection(&pkg, RULE_TCP, match & 2);
+            if(!new_con)
+                goto tcp_accept;    // when we cannot create a connection, NAT will be unavailable
+            nat_config* nc = match_pat(pkg.myhdr->cliip, pkg.myhdr->srvip);
+            if(nc){    // need to do pat
+                pat_connection* new_pat = (pat_connection*)kmalloc(sizeof(pat_connection), GFP_KERNEL);
+                new_pat->lan.ip = new_con->header.cliip;
+                new_pat->lan.port = new_con->header.cliport;
+                new_pat->wan.ip = new_con->header.srvport;
+                new_pat->wan.port = new_con->header.srvport;
+                new_pat->con = new_con;
+                new_con->nat = new_pat;
+                new_pat->gate.ip = nc->config.pc.wan;
+                new_pat->gate.port = new_pat_port();
+                connection* fake_con = add_fake_connection(new_con);
+            }
+            mayexist = new_con;
             goto tcp_accept;
         }
     }
@@ -80,7 +96,6 @@ unsigned int tcp_handler(void* priv, struct sk_buff* skb,
     return NF_ACCEPT;
     tcp_drop:
     spin_unlock_bh(&tcp_handler_lock);
-    printk("A TCP packet dropped.");
     kfree(pkg.myhdr);
     return NF_DROP;     // must be a complete TCP procedure
 }
@@ -100,20 +115,36 @@ unsigned int udp_handler(void* priv, struct sk_buff* skb,
 
     spin_lock_bh(&udp_handler_lock);
     mayexist = (connection*)find_con(pkg.myhdr, pkg.hash, RULE_UDP);
+
     if(mayexist != NULL){
-        size_t ts = this_moment_usec();
-        mayexist->last = ts;
+        mayexist->last = this_moment_usec();
         if(mayexist->log)
-            new_udp_log(&pkg, ACCEPT);
+            new_udp_log(&pkg, ACCEPT, hook_point);
         reset_timer(mayexist, RULE_UDP, get_next_timeout(mayexist->timeout, RULE_UDP));
         mayexist->timeout = get_next_timeout(mayexist->timeout, RULE_UDP);
         goto udp_accept;
     }
     unsigned match = match_rules(pkg.myhdr, hook_point, RULE_UDP);
     if(match & 2)
-        new_udp_log(&pkg, match & 1);
+        new_udp_log(&pkg, match & 1, hook_point);
     if(match & 1){
-        add_connection(&pkg, RULE_UDP, match & 2);
+        connection* new_con = add_connection(&pkg, RULE_UDP, match & 2);
+        if(!new_con)
+            goto udp_accept;    // when we cannot create a connection, NAT will be unavailable
+        nat_config* nc = match_pat(pkg.myhdr->cliip, pkg.myhdr->srvip);
+        if(nc){    // need to do pat
+            pat_connection* new_pat = (pat_connection*)kmalloc(sizeof(pat_connection), GFP_KERNEL);
+            new_pat->lan.ip = new_con->header.cliip;
+            new_pat->lan.port = new_con->header.cliport;
+            new_pat->wan.ip = new_con->header.srvport;
+            new_pat->wan.port = new_con->header.srvport;
+            new_pat->con = new_con;
+            new_con->nat = new_pat;
+            new_pat->gate.ip = nc->config.pc.wan;
+            new_pat->gate.port = new_pat_port();
+            connection* fake_con = add_fake_connection(new_con);
+        }
+        mayexist = new_con;
         goto udp_accept;
     }
     goto udp_drop;
@@ -123,7 +154,6 @@ unsigned int udp_handler(void* priv, struct sk_buff* skb,
     return NF_ACCEPT;
     udp_drop:
     spin_unlock_bh(&udp_handler_lock);
-    printk("A UDP packet dropped.");
     kfree(pkg.myhdr);
     return NF_DROP;
 }
@@ -144,17 +174,16 @@ unsigned int icmp_handler(void* priv, struct sk_buff* skb,
     spin_lock_bh(&icmp_handler_lock);
     mayexist = (icmp_connection*)find_con(pkg.myhdr, pkg.hash, RULE_ICMP);
     if(mayexist != NULL){
-        size_t ts = this_moment_usec();
-        mayexist->last = ts;
+        mayexist->last = this_moment_usec();
         if(mayexist->log)
-            new_icmp_log(&pkg, ACCEPT);
+            new_icmp_log(&pkg, ACCEPT, hook_point);
         reset_timer(mayexist, RULE_ICMP, get_next_timeout(mayexist->timeout, RULE_ICMP));
         mayexist->timeout = get_next_timeout(mayexist->timeout, RULE_ICMP);
         goto icmp_accept;
     }
     unsigned match = match_rules(pkg.myhdr, hook_point, RULE_ICMP);
     if(match & 2)
-        new_icmp_log(&pkg, match & 1);
+        new_icmp_log(&pkg, match & 1, hook_point);
     if(match & 1){
         add_connection(&pkg, RULE_ICMP, match & 2);
         goto icmp_accept;
@@ -166,7 +195,6 @@ unsigned int icmp_handler(void* priv, struct sk_buff* skb,
     return NF_ACCEPT;
     icmp_drop:
     spin_unlock_bh(&icmp_handler_lock);
-    printk("A ICMP packet dropped.");
     kfree(pkg.myhdr);
     return NF_DROP;
 }
@@ -189,61 +217,23 @@ unsigned int packet_monitor(void * priv,struct sk_buff *skb,const struct nf_hook
 	}
 }
 
-unsigned int nat_in_monitor(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
-//    struct iphdr* ip = ip_hdr(skb);
-//    switch(ip->protocol){
-//        case IPPROTO_TCP:{
-//            if(is_conflict_with_pat(ntohl(ip->saddr)));
-//        }
-//    }
-    return NF_ACCEPT;
+unsigned int pre_routing_nat_hook(void *priv,struct sk_buff *skb,const struct nf_hook_state * state){
+    return do_nat_in(priv, skb, state);
 }
 
-unsigned int nat_out_monitor(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
-//    struct iphdr* ip = ip_hdr(skb);
-//    switch(ip->protocol){
-//
-//    }
-    return NF_ACCEPT;
+unsigned int post_routing_nat_hook(void *priv,struct sk_buff *skb,const struct nf_hook_state * state){
+    return do_nat_out(priv, skb, state);
 }
 
 unsigned int pre_routing_hook(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
     return packet_monitor(priv, skb, state, HP_PRE_ROUTING);
 }
 
-unsigned int local_in_hook(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
-    return packet_monitor(priv, skb, state, HP_LOCAL_IN);
-}
-
-unsigned int local_out_hook(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
-    return packet_monitor(priv, skb, state, HP_LOCAL_OUT);
-}
-
-unsigned int forward_hook(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
-    return packet_monitor(priv, skb, state, HP_FORWARD);
-}
-
 unsigned int post_routing_hook(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
     return packet_monitor(priv, skb, state, HP_POST_ROUTING);
 }
 
-unsigned int pre_routing_nat_hook(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
-    return nat_in_monitor(priv, skb, state);
-}
-
-unsigned int post_routing_nat_hook(void * priv,struct sk_buff *skb,const struct nf_hook_state * state){
-    return nat_out_monitor(priv, skb, state);
-}
-
-// unsigned int post_routing_nat_hook(void *priv,struct sk_buff *skb,const struct nf_hook_state * state){
-//     //get src_ip check whether need SNAT
-//     if(exist_nat()){
-//         SNAT_change();
-//     }
-//     return NF_ACCEPT;
-// }
-
-//nat
+// nats
 static struct nf_hook_ops pre_routing_nat={
  .hook = pre_routing_nat_hook,
  .pf = PF_INET,
@@ -256,30 +246,12 @@ static struct nf_hook_ops post_routing_nat = {
  .hooknum = NF_INET_POST_ROUTING,
  .priority = NF_IP_PRI_NAT_SRC,
 };
-//connect
+// connections
 static struct nf_hook_ops pre_routing_op = {
     .hook = pre_routing_hook,
     .pf = PF_INET,
     .hooknum = NF_INET_PRE_ROUTING,
     .priority = NF_IP_PRI_FIRST
-};
-static struct nf_hook_ops local_in_op = {
-    .hook = local_in_hook,
-    .pf = PF_INET,
-    .hooknum = NF_INET_LOCAL_IN,
-    .priority = NF_IP_PRI_FIRST
-};
-static struct nf_hook_ops forward_op = {
-    .hook = forward_hook,
-    .pf = PF_INET,
-    .hooknum = NF_INET_FORWARD,
-    .priority = NF_IP_PRI_FIRST
-};
-static struct nf_hook_ops local_out_op = {
-    .hook = local_out_hook,//function pointer
-    .pf = PF_INET, //ipv4
-    .hooknum = NF_INET_LOCAL_OUT, //which position to hook
-    .priority = NF_IP_PRI_FIRST // priority
 };
 static struct nf_hook_ops post_routing_op = {
     .hook = post_routing_hook,
@@ -320,22 +292,18 @@ static int activate_hook(void){
     //netfilter hook
     printk("Netfilter hooks ready to register.\n");
     nf_register_net_hook(&init_net, &pre_routing_op);
-    nf_register_net_hook(&init_net, &forward_op);
-    nf_register_net_hook(&init_net, &local_in_op);
-    nf_register_net_hook(&init_net, &local_out_op);
     nf_register_net_hook(&init_net, &post_routing_op);
+    nf_register_net_hook(&init_net, &pre_routing_nat);
+    nf_register_net_hook(&init_net, &post_routing_nat);
 	printk("All 5 hook points hooked.\n");
     
     //cdev register
     printk("Char device ready to register.\n");
     cdev_init(&cdev, &cdev_fops);
-	alloc_chrdev_region(&devid, 2, 1, CDEV_NAME);//output first_minor_num the_num_of_distributed_devices device_name
+	alloc_chrdev_region(&devid, 2, 1, CDEV_NAME);
 	printk("MAJOR char device number: %d\n", MAJOR(devid));
 	printk("MINOR char device number: %d\n", MINOR(devid));
-    // printk("use command `cat /proc/devices | grep %s` to see the major number\n",MYNAME);
-    // printk("use command `mknod /dev/%s c %d %d` to create the node\n",MYNAME,MAJOR(devid),MINOR(devid));//attention : authority
-	cdev_add(&cdev, devid, 1);//cdev devid(major and minor) the_num_of_distributed_devices
-    // create a node
+	cdev_add(&cdev, devid, 1);
     cls = class_create(THIS_MODULE, CDEV_NAME);
     class_dev = device_create(cls, NULL, devid, NULL, CDEV_NAME);
 
@@ -354,11 +322,10 @@ static int activate_hook(void){
 
 static void deactivate_hook(void){
     // hook unregister
-    nf_unregister_net_hook(&init_net,&pre_routing_op);
-    nf_unregister_net_hook(&init_net,&forward_op);
-    nf_unregister_net_hook(&init_net,&local_in_op);
-    nf_unregister_net_hook(&init_net,&local_out_op);
-    nf_unregister_net_hook(&init_net,&post_routing_op);
+    nf_unregister_net_hook(&init_net, &pre_routing_op);
+    nf_unregister_net_hook(&init_net, &post_routing_op);
+    nf_unregister_net_hook(&init_net, &pre_routing_nat);
+    nf_unregister_net_hook(&init_net, &post_routing_nat);
     // wait for analyses to end
     spin_lock(&con_lock);
     spin_lock(&log_lock);

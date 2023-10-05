@@ -10,10 +10,7 @@ Widget::Widget(QWidget *parent)
     ui->setupUi(this);
     hooks = new QButtonGroup(this);
     hooks->addButton(ui->pre_routing, 0);
-    hooks->addButton(ui->local_in, 1);
-    hooks->addButton(ui->local_out, 2);
-    hooks->addButton(ui->forward, 3);
-    hooks->addButton(ui->post_routing, 4);
+    hooks->addButton(ui->post_routing, 1);
     protos = new QButtonGroup(this);
     protos->addButton(ui->btn_tcp, 0);
     protos->addButton(ui->btn_udp, 1);
@@ -22,6 +19,7 @@ Widget::Widget(QWidget *parent)
     infos->addButton(ui->btn_connections, 0);
     infos->addButton(ui->btn_rules, 1);
     infos->addButton(ui->btn_logs, 2);
+    infos->addButton(ui->btn_nats, 3);
 
     int shell_ret = shell("insmod ../kernel/lhy_firewall.ko", "Successfully installed the kernel module.",
           "Failed to install the kernel module.");
@@ -56,6 +54,10 @@ Widget::Widget(QWidget *parent)
             default_strategy[i][j] = ioctl(devfd, IOCTL_GET_DEFAULT + IOCTL_PROTO(j) + i, 0b10000000);
         }
 
+    nat_model = new QStandardItemModel(nullptr);
+    nat_model->setColumnCount(nat_headers.length());
+    for(int i=0; i<nat_headers.length(); i++)
+        nat_model->setHeaderData(i, Qt::Horizontal, nat_headers.at(i));
     for(int i=0; i<HOOK_CNT; i++)
         for(int j=0; j<PROTOCOL_SUPPORTED; j++){
             rule_models[i][j] = new QStandardItemModel(nullptr);
@@ -87,22 +89,16 @@ Widget::Widget(QWidget *parent)
     ui->infotable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->infotable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->infotable->verticalHeader()->hide();
-    refresh_thread = new QThread();
-    connect(refresh_thread, &QThread::started, this, [](){
-        while(true){
-            QCoreApplication::processEvents();
-        }
-    });
-    // refresh_thread->start();
+    filter = new log_filter();
 }
 
 void Widget::closeEvent(QCloseEvent* e){
     Q_UNUSED(e);
     ::close(devfd);
-    refresh_thread->exit();
     update_timer.stop();
     shell("rmmod ../kernel/lhy_firewall.ko", "Successfully removed the kernel module.",
           "Failed to remove the kernel module.");
+    delete filter;
     exit(0);
 }
 
@@ -135,21 +131,6 @@ void Widget::set_rule_path(QString path){
 
 void Widget::on_pre_routing_clicked(){
     current_hook = HP_PRE_ROUTING;
-    start_update_table(current_info, current_hook, current_proto);
-}
-
-void Widget::on_local_out_clicked(){
-    current_hook = HP_LOCAL_OUT;
-    start_update_table(current_info, current_hook, current_proto);
-}
-
-void Widget::on_local_in_clicked(){
-    current_hook = HP_LOCAL_IN;
-    start_update_table(current_info, current_hook, current_proto);
-}
-
-void Widget::on_forward_clicked(){
-    current_hook = HP_FORWARD;
     start_update_table(current_info, current_hook, current_proto);
 }
 
@@ -224,6 +205,11 @@ void Widget::update_table(unsigned info, unsigned hook, unsigned proto){
             selected_model = log_models[proto];
             ui->infotable->setModel(selected_model);
             log_table::update_log(proto);
+            break;
+        case INFO_NAT:
+            selected_model = nat_model;
+            ui->infotable->setModel(nat_model);
+            nat_table::update_nat();
             break;
         }
         if((unsigned)selected_model->rowCount() <= rows_per_show)
@@ -312,6 +298,7 @@ void Widget::on_infotable_customContextMenuRequested(const QPoint &pos)
 
 void Widget::on_view_slider_valueChanged(int value)
 {
+    Q_UNUSED(value);
     if(log_models[current_proto]->rowCount() < log_length[current_proto])
         show_row_range(ui->view_slider->value() * rows_per_show, (ui->view_slider->value() + 1) * rows_per_show);
     else{
@@ -341,6 +328,7 @@ void Widget::on_slider_val_editingFinished()
 
 void Widget::on_slider_val_valueChanged(int arg1)
 {
+    Q_UNUSED(arg1);
     ui->view_slider->setValue(ui->slider_val->value());
 }
 
@@ -361,4 +349,22 @@ void Widget::on_btn_clearlog_clicked()
     }else{
         QMessageBox::critical(this, "error", "Failed to clear log, unknown error occured.");
     }
+}
+
+void Widget::on_btn_addnat_clicked()
+{
+    nat_adder* wg = new nat_adder(nullptr);
+    wg->show();
+}
+
+void Widget::on_btn_nats_clicked()
+{
+    current_info = INFO_NAT;
+    start_update_table(current_info, current_hook, current_proto);
+}
+
+void Widget::on_btn_logfilter_clicked()
+{
+    log_filter* filter = new log_filter();
+    filter->show();
 }

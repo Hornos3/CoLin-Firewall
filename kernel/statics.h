@@ -55,6 +55,9 @@ extern nat_config* nat_rules;
 extern spinlock_t nat_lock;
 extern unsigned nat_cnt;
 extern unsigned max_nat;
+extern unsigned char ports[65536];   // speed up the searching for available port
+extern unsigned short nat_port_start;
+extern unsigned short nat_port_end;
 extern unsigned default_strategy[HOOK_CNT][PROTOCOL_SUPPORTED];
 extern unsigned rule_cnt[HOOK_CNT][PROTOCOL_SUPPORTED];
 extern unsigned max_rule;                                           // 16

@@ -13,12 +13,21 @@ void con_table::update_connections(unsigned proto){
         QMessageBox::critical(nullptr, "error", "Error occurred while getting connection infos from kernel.");
         return;
     }
-    tu_con_touser* connections = (tu_con_touser*)data->cons[proto];
-    unsigned length = data->con_count[proto];
-    connection_models[proto]->removeRows(0, connection_models[proto]->rowCount());
-    for(unsigned i=0; i<length; i++)
-        connection_models[proto]->appendRow(
-                    analyse_kernel_info(connections + i, proto));
+    if(proto == RULE_TCP || proto == RULE_UDP){
+        tu_con_touser* connections = (tu_con_touser*)data->cons[proto];
+        unsigned length = data->con_count[proto];
+        connection_models[proto]->removeRows(0, connection_models[proto]->rowCount());
+        for(unsigned i=0; i<length; i++)
+            connection_models[proto]->appendRow(
+                        analyse_kernel_info(connections + i, proto));
+    }else if(proto == RULE_ICMP){
+        icmp_con_touser* connections = (icmp_con_touser*)data->cons[proto];
+        unsigned length = data->con_count[proto];
+        connection_models[proto]->removeRows(0, connection_models[proto]->rowCount());
+        for(unsigned i=0; i<length; i++)
+            connection_models[proto]->appendRow(
+                        analyse_kernel_info(connections + i, proto));
+    }
     free(data);
 }
 
@@ -30,8 +39,14 @@ QList<QStandardItem*> con_table::analyse_kernel_info(void* from_kernel, unsigned
         // client, server, status(for tcp)
         tu_con_touser* data = (tu_con_touser*)from_kernel;
         QHostAddress ipaddr(data->header.cliip);
-        ret << new QStandardItem(SPACE(ipaddr.toString() + ":" +
-                                 QString::fromStdString(std::to_string(data->header.cliport))));
+        if(data->pat.ip){
+            QHostAddress nat(data->pat.ip);
+            ret << new QStandardItem(SPACE(ipaddr.toString() + ":" + QString::number(data->header.cliport))
+                                     + "\n↓\n" + SPACE(nat.toString() + ":" + QString::number(data->pat.port)));
+        }else{
+            ret << new QStandardItem(SPACE(ipaddr.toString() + ":" +
+                                     QString::fromStdString(std::to_string(data->header.cliport))));
+        }
         ipaddr.setAddress(data->header.srvip);
         ret << new QStandardItem(SPACE(ipaddr.toString() + ":" +
                                  QString::fromStdString(std::to_string(data->header.srvport))));

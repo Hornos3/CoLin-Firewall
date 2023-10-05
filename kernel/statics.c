@@ -20,7 +20,6 @@ unsigned UDP_con_timeout_fixed = true;
 // connections
 spinlock_t con_lock = {};
 void* con_bucket[PROTOCOL_SUPPORTED][CONNECTION_BUCKET_CNT] = {{NULL},};
-
 unsigned con_count[PROTOCOL_SUPPORTED] = {0, 0, 0};
 unsigned max_con[PROTOCOL_SUPPORTED] = {1024, 1024, 128};
 
@@ -34,9 +33,7 @@ bool log_rewind[PROTOCOL_SUPPORTED] = {0, 0, 0};
 unsigned new_log_cnt[PROTOCOL_SUPPORTED] = {0, 0, 0};
 spinlock_t log_lock = {};
 
-
 // rules
-
 spinlock_t rule_lock = {};
 fwrule* rules[HOOK_CNT][PROTOCOL_SUPPORTED] = {{NULL},};
 fwrule* rules_end[HOOK_CNT][PROTOCOL_SUPPORTED] = {{NULL},};
@@ -44,7 +41,9 @@ fwrule* rules_end[HOOK_CNT][PROTOCOL_SUPPORTED] = {{NULL},};
 // bit 1: default log/no log
 nat_config* nat_rules = NULL;
 spinlock_t nat_lock = {};
-size_t port_bitmap[65536 / 64] = {0};
+unsigned char ports[65536] = {0};   // speed up the searching for available port
+unsigned short nat_port_start = 40000;
+unsigned short nat_port_end = 65535;
 unsigned nat_cnt = 0;
 unsigned max_nat = 64;
 unsigned default_strategy[HOOK_CNT][PROTOCOL_SUPPORTED] = {{0},};

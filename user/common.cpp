@@ -3,6 +3,7 @@
 QStandardItemModel* connection_models[PROTOCOL_SUPPORTED];
 QStandardItemModel* rule_models[HOOK_CNT][PROTOCOL_SUPPORTED];
 QStandardItemModel* log_models[PROTOCOL_SUPPORTED];
+QStandardItemModel* nat_model;
 unsigned log_model_ptr[PROTOCOL_SUPPORTED] = {0, 0, 0};     // represents the index of the earlist record
 int devfd;
 int frontend_update_interval = 1000;    //msec
@@ -16,23 +17,37 @@ unsigned TCP_con_timeout_fixed;                              // 8
 unsigned UDP_con_timeout_fixed;                              // 9
 unsigned max_con[PROTOCOL_SUPPORTED];                        // 10-12
 unsigned log_length[PROTOCOL_SUPPORTED];                     // 13-15
-unsigned max_rule;
+unsigned max_rule;                                           // 16
+unsigned max_nat;                                            // 17
 char rule_path[256];
 unsigned default_strategy[HOOK_CNT][PROTOCOL_SUPPORTED];
 unsigned rows_per_show = 20;
 bool autosave_log = true;   // save log through GUI, not kernel
 QString autosave_path = "/etc/lhy_firewall/log_autosave";   // a directory
 
+QStandardItemModel filter_model;
+
 const QString hook_names[HOOK_CNT] = {
     "PRE_ROUTING",
-    "LOCAL_IN",
-    "LOCAL_OUT",
-    "FORWARD",
     "POST_ROUTING"
 };
 
 const QString proto_names[PROTOCOL_SUPPORTED] = {
     "TCP", "UDP", "ICMP"
+};
+
+const QStringList rule_headers[PROTOCOL_SUPPORTED] = {
+    {"Sender IP", "Sender Port", "Receiver IP", "Receiver Port", "Protocol", "Action", "Log"},
+    {"Sender IP", "Sender Port", "Receiver IP", "Receiver Port", "Protocol", "Action", "Log"},
+    {"Sender IP", "Receiver IP", "Protocol", "Action", "Log"}
+};
+const QStringList log_headers[PROTOCOL_SUPPORTED] = {
+    {"Time", "Sender", "Receiver", "Action", "Hook point", "Seq", "Ack Seq", "Symbols", "Packet Length"},
+    {"Time", "Sender", "Receiver", "Action", "Hook point", "Packet Length"},
+    {"Time", "Sender", "Receiver", "ICMP Type", "ICMP Code", "Action", "Hook point", "Packet Length"}
+};
+const QStringList nat_headers = {
+    "LAN", "gateway IP"
 };
 
 unsigned* configs[CONFIG_CNT] = {
@@ -52,7 +67,8 @@ unsigned* configs[CONFIG_CNT] = {
     &log_length[0],
     &log_length[1],
     &log_length[2],
-    &max_rule
+    &max_rule,
+    &max_nat
 };
 
 void print_binary(char* buf, int length){

@@ -1,6 +1,7 @@
 #ifndef LOG_TABLE_H
 #define LOG_TABLE_H
 
+#include <string>
 #include <QHostAddress>
 #include <QItemDelegate>
 

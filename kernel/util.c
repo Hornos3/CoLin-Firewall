@@ -255,9 +255,10 @@ fwrule* rule_indexer(unsigned hp, unsigned proto, unsigned index){
     return ptr;
 }
 
-void inlink_nat(nat_config* new_rule){
+void inlink_nat_rule(nat_config* new_rule){
     if(nat_rules == NULL){
         nat_rules = new_rule;
+        new_rule->prev = new_rule->next = NULL;
         return;
     }
     nat_rules->prev = new_rule;
@@ -266,7 +267,7 @@ void inlink_nat(nat_config* new_rule){
     nat_rules = new_rule;
 }
 
-void delink_nat(nat_config* target){
+void delink_nat_rule(nat_config* target){
     if(!target)
         return;
     if(target == nat_rules){
@@ -283,7 +284,7 @@ void delink_nat(nat_config* target){
     }
 }
 
-nat_config* nat_indexer(nat_config* rule){
+nat_config* nat_rule_indexer(nat_config* rule){
     nat_config* ptr = nat_rules;
     while(ptr){
         if(ptr->NAT_mode != rule->NAT_mode){
@@ -367,14 +368,21 @@ unsigned extract_connections(void* buf, unsigned proto, unsigned limit){
             if(proto == RULE_TCP || proto == RULE_UDP){
                 ((tu_con_touser*)buf)[idx].timeout = ((connection*)ptr)->timeout + ((connection*)ptr)->last / 1000000;
                 ((tu_con_touser*)buf)[idx].last = ((connection*)ptr)->last;
+                if(((connection*)ptr)->nat) {
+                    ((tu_con_touser *) buf)[idx].pat.ip = ((connection*)ptr)->nat->gate.ip;
+                    ((tu_con_touser *) buf)[idx].pat.port = ((connection*)ptr)->nat->gate.port;
+                }else{
+                    ((tu_con_touser *) buf)[idx].pat.ip = 0;
+                    ((tu_con_touser *) buf)[idx].pat.port = 0;
+                }
                 memcpy(&((tu_con_touser*)buf)[idx++].header, &((connection*)ptr)->header,HEADER_SIZE(proto));
                 ptr = ((connection*)ptr)->next;
             }
             else{
+                ((icmp_con_touser*)buf)[idx].timeout = ((icmp_connection*)ptr)->timeout + ((icmp_connection*)ptr)->last / 1000000;
+                ((icmp_con_touser*)buf)[idx].last = ((icmp_connection*)ptr)->last;
+                ((icmp_con_touser*)buf)[idx].type = ((icmp_connection*)ptr)->type;
                 memcpy(&((icmp_con_touser*)buf)[idx++].header, &((icmp_connection*)ptr)->header,HEADER_SIZE(proto));
-                ((icmp_con_touser*)buf)[idx].timeout = ((icmp_con_touser*)ptr)->timeout + ((icmp_con_touser*)ptr)->last / 1000000;
-                ((icmp_con_touser*)buf)[idx].last = ((icmp_con_touser*)ptr)->last;
-                ((icmp_con_touser*)buf)->type = ((icmp_con_touser*)ptr)->type;
                 ptr = ((icmp_connection*)ptr)->next;
             }
         }
@@ -459,6 +467,29 @@ unsigned extract_new_logs(void* buf, unsigned proto, unsigned limit){
            LOG_SIZE(proto) * (copy_cnt + start_point - log_length[proto]));
     new_log_cnt[proto] -= limit;
     return copy_cnt;
+}
+
+unsigned extract_nat_configs(nat_config_touser* buf, unsigned limit){
+    nat_config_touser* kernel = (nat_config_touser*)kmalloc(MAX_NAT_BUFLEN, GFP_KERNEL);
+    if(nat_cnt == 0)
+        return 0;
+    if(!buf)
+        return 0;
+    nat_config* ptr = nat_rules;
+    unsigned ret = 0;
+
+    while(ptr){
+        memcpy(kernel + ret, ptr, sizeof(nat_config_touser));
+        ptr = ptr->next;
+        ++ret;
+        if(ret == limit)
+            break;
+    }
+    if(copy_to_user(buf, kernel, sizeof(nat_config_touser) * ret)){
+        printk(KERN_ERR "Failed to copy nat config data to user.");
+        return -1;
+    }
+    return ret;
 }
 
 /******************** debug functions ********************/
@@ -742,31 +773,24 @@ rule_ifh* get_rule_for_output(unsigned hook, unsigned proto){
 }
 
 /******************** nat functions ********************/
-nat_config* match_pat(unsigned ip, unsigned short port){
+nat_config* match_pat(unsigned src, unsigned dst){
     nat_config* ptr = nat_rules;
     while(ptr){
         if(ptr->NAT_mode == NAT_PAT){
-            if(is_inCIDR(ip, &ptr->config.pc.lan) && port >= ptr->config.pc.ports.start &&
-                port <= ptr->config.pc.ports.end)
+            if(is_inCIDR(src, &(ptr->config.pc.lan)) && !is_inCIDR(dst, &(ptr->config.pc.lan))) {
                 return ptr;
+            }
         }
         ptr = ptr->next;
     }
     return NULL;
 }
 
-bool is_conflict_with_pat(unsigned ip, unsigned short port){
-    nat_config* ptr = nat_rules;
-    char port_may_conflict = 0;
-    while(ptr){
-        if(ptr->NAT_mode == NAT_PAT){
-            if(is_inCIDR(ip, &ptr->config.pc.lan) && port >= ptr->config.pc.ports.start &&
-               port <= ptr->config.pc.ports.end)        // This packet is pat needed, not conflict
-                return false;
-            else if(port >= ptr->config.pc.ports.start && port <= ptr->config.pc.ports.end)
-                port_may_conflict = 1;
+unsigned short new_pat_port(){
+    for(int i=nat_port_start; i<=nat_port_end; i++){
+        if(!ports[i]){
+            ports[i] = 1;
+            return i;
         }
-        ptr = ptr->next;
     }
-    return port_may_conflict;
 }

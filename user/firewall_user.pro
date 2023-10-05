@@ -18,8 +18,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     common.cpp \
     con_table.cpp \
+    filter_widget.cpp \
+    log_filter.cpp \
     log_table.cpp \
     main.cpp \
+    nat_adder.cpp \
+    nat_table.cpp \
     rule_adder.cpp \
     rule_deler.cpp \
     rule_table.cpp \
@@ -29,7 +33,11 @@ SOURCES += \
 HEADERS += \
     common.h \
     con_table.h \
+    filter_widget.h \
+    log_filter.h \
     log_table.h \
+    nat_adder.h \
+    nat_table.h \
     rule_adder.h \
     rule_deler.h \
     rule_table.h \
@@ -37,6 +45,9 @@ HEADERS += \
     widget.h
 
 FORMS += \
+    filter_widget.ui \
+    log_filter.ui \
+    nat_adder.ui \
     rule_adder.ui \
     rule_deler.ui \
     settings.ui \

@@ -26,6 +26,7 @@
     (proto == RULE_UDP) ? sizeof(udp_log) * log_length[RULE_UDP] : \
     sizeof(icmp_log) * log_length[RULE_ICMP])
 #define MAX_RULE_BUFLEN (sizeof(rule_ifh) + sizeof(fwrule_user) * max_rule)
+#define MAX_NAT_BUFLEN (sizeof(nat_config_touser) * max_nat)
 #define RULEOUT_SIZE(x) (((rule_ifh*)x)->rule_num * sizeof(fwrule_user) + sizeof(rule_ifh))
 
 typedef struct icmp_con_touser{
@@ -37,6 +38,7 @@ typedef struct icmp_con_touser{
 
 typedef struct tcpudp_con_touser{
     tu_header header;
+    ipport pat;
     size_t last;
     unsigned timeout;
 }tu_con_touser;

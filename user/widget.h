@@ -25,6 +25,9 @@
 #include "settings.h"
 #include "con_table.h"
 #include "log_table.h"
+#include "nat_adder.h"
+#include "nat_table.h"
+#include "log_filter.h"
 #include "rule_adder.h"
 #include "rule_deler.h"
 #include "rule_table.h"
@@ -40,15 +43,13 @@ class Widget : public QWidget
 public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
+    QStandardItemModel filter_model;
 
 protected:
     void closeEvent(QCloseEvent* e);
 
 private slots:
     void on_pre_routing_clicked();
-    void on_local_out_clicked();
-    void on_local_in_clicked();
-    void on_forward_clicked();
     void on_post_routing_clicked();
     void on_btn_tcp_clicked();
     void on_btn_udp_clicked();
@@ -78,6 +79,12 @@ private slots:
 
     void on_btn_clearlog_clicked();
     
+    void on_btn_addnat_clicked();
+
+    void on_btn_nats_clicked();
+
+    void on_btn_logfilter_clicked();
+
 private:
     Ui::Widget *ui;
     QButtonGroup* hooks;
@@ -86,7 +93,6 @@ private:
     QPushButton* last_pressed_hook = nullptr;
     QPushButton* last_pressed_info = nullptr;
     QPushButton* last_pressed_proto = nullptr;
-    QThread* refresh_thread;
     QStandardItemModel* selected_model;
     QTimer update_timer;
     unsigned current_proto = 0;
@@ -94,19 +100,12 @@ private:
     unsigned current_info = 0;
     bool initialize_click = true;
 
+    log_filter* filter;
+
     const QStringList connection_headers[PROTOCOL_SUPPORTED] = {{"Client", "Server", "Last packet at", "Expires at"},
                                                                 {"Client", "Server", "Last packet at", "Expires at"},
                                                                 {"Client", "Server", "ICMP Type", "Last packet at", "Expires at"}};
-    const QStringList rule_headers[PROTOCOL_SUPPORTED] = {
-        {"Sender IP", "Sender Port", "Receiver IP", "Receiver Port", "Protocol", "Action", "Log"},
-        {"Sender IP", "Sender Port", "Receiver IP", "Receiver Port", "Protocol", "Action", "Log"},
-        {"Sender IP", "Receiver IP", "Protocol", "Action", "Log"}
-    };
-    const QStringList log_headers[PROTOCOL_SUPPORTED] = {
-        {"Time", "Sender", "Receiver", "Action", "Seq", "Ack Seq", "Symbols", "Packet Length"},
-        {"Time", "Sender", "Receiver", "Action", "Packet Length"},
-        {"Time", "Sender", "Receiver", "ICMP Type", "ICMP Code", "Action", "Packet Length"}
-    };
+
 
 #define COLUMN_COUNT(info, proto) \
     (info == INFO_CON) ? (connection_headers[proto].length()) : \

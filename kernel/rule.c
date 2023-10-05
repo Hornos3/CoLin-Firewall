@@ -118,7 +118,7 @@ bool del_rule(rule_tbd* tbd){
 }
 
 bool del_all_rule(unsigned proto, unsigned hook){
-    if(proto != 3 && hook != 5){
+    if(proto != PROTOCOL_SUPPORTED && hook != HOOK_CNT){
         rule_tbd tbd = {
             .proto = proto,
             .hp = hook,
@@ -129,14 +129,14 @@ bool del_all_rule(unsigned proto, unsigned hook){
         printk(KERN_INFO "Deleted all rules for %s in %s.\n", 
             proto_names[proto], hp_names[hook]);
         return true;
-    }else if(proto == 3 && hook != 5){
+    }else if(proto == PROTOCOL_SUPPORTED && hook != HOOK_CNT){
         rule_tbd tbd = {
             .proto = proto,
             .hp = hook,
             .pos = 1
         };
         int p = 0;
-        for(; p<3; p++){
+        for(; p<PROTOCOL_SUPPORTED; p++){
             tbd.proto = p;
             while(rules[hook][p])
                 del_rule(&tbd);
@@ -144,14 +144,14 @@ bool del_all_rule(unsigned proto, unsigned hook){
         printk(KERN_INFO "Deleted all rules for all protocols in %s.\n",
             hp_names[hook]);
         return true;
-    }else if(proto != 3 && hook == 5){
+    }else if(proto != PROTOCOL_SUPPORTED && hook == HOOK_CNT){
         rule_tbd tbd = {
             .proto = proto,
             .hp = hook,
             .pos = 1
         };
         int h = 0;
-        for(; h<5; h++){
+        for(; h<HOOK_CNT; h++){
             tbd.hp = h;
             while(rules[h][proto])
                 del_rule(&tbd);
@@ -166,9 +166,9 @@ bool del_all_rule(unsigned proto, unsigned hook){
             .pos = 1
         };
         int h = 0, p = 0;
-        for(; h<5; h++){
+        for(; h<HOOK_CNT; h++){
             tbd.hp = h;
-            for(; p<3; p++){
+            for(; p<PROTOCOL_SUPPORTED; p++){
                 tbd.proto = p;
                 while(rules[h][p])
                     del_rule(&tbd);
@@ -189,32 +189,38 @@ bool add_nat(nat_config* new_conf){
         printk("Failed to read nat config from user!");
         return false;
     }
+    if(from_user->NAT_mode != NAT_PAT){
+        printk(KERN_ERR "NAT mode not supported.");
+        kfree(from_user);
+        return false;
+    }
 
     spin_lock(&nat_lock);
     nat_cnt++;
-    inlink_nat(from_user);
+    inlink_nat_rule(from_user);
     spin_unlock(&nat_lock);
 
 #ifdef DEBUG_MODE
     char* srcip = ip_ntoa(from_user->config.pc.lan.ip);
     char* dstip = ip_ntoa(from_user->config.pc.wan);
-    printk(KERN_INFO "Successfully added a nat rule for lan %s/%d, wan %s, port %d~%d\n", srcip,
-            from_user->config.pc.lan.mask, dstip, from_user->config.pc.ports.start, from_user->config.pc.ports.end);
+    printk(KERN_INFO "Successfully added a nat rule for lan %s/%d, wan %s\n", srcip,
+            from_user->config.pc.lan.mask, dstip);
     kfree(srcip);
     kfree(dstip);
 #endif
+    return true;
 }
 
 bool del_nat(nat_config* target){
     if(nat_cnt == 0)
         return false;
     spin_lock(&nat_lock);
-    nat_config* t = nat_indexer(target);
+    nat_config* t = nat_rule_indexer(target);
     if(!t){
         spin_unlock(&nat_lock);
         return false;
     }
-    delink_nat(t);
+    delink_nat_rule(t);
     spin_unlock(&nat_lock);
     return true;
 }

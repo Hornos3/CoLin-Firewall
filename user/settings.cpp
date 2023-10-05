@@ -23,6 +23,7 @@ settings::settings(QWidget *parent) :
     ui->udp_max_logs->setValue(log_length[RULE_UDP]);
     ui->icmp_max_logs->setValue(log_length[RULE_ICMP]);
     ui->max_rule->setValue(max_rule);
+    ui->max_nat->setValue(max_nat);
     ui->rule_path->setText(rule_path);
     ui->default_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->default_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);

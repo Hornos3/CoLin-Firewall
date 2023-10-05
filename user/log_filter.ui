@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>log_filter</class>
+ <widget class="QWidget" name="log_filter">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>692</width>
+    <height>428</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <pointsize>16</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Log Filter</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="btn_clear_filter">
+         <property name="text">
+          <string>clear filter</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QRadioButton" name="choice_tcp">
+         <property name="text">
+          <string>TCP</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="choice_udp">
+         <property name="text">
+          <string>UDP</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="choice_icmp">
+         <property name="text">
+          <string>ICMP</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QScrollArea" name="scrollArea">
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>670</width>
+          <height>274</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="0" column="0">
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0">
+            <widget class="QCheckBox" name="srcip">
+             <property name="text">
+              <string>Source IP</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1" colspan="6">
+            <widget class="QLineEdit" name="srcip_filter">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="dstip">
+             <property name="text">
+              <string>Dest IP</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1" colspan="6">
+            <widget class="QLineEdit" name="dstip_filter">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QCheckBox" name="srcport">
+             <property name="text">
+              <string>Source port</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1" colspan="6">
+            <widget class="QLineEdit" name="srcport_filter">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QCheckBox" name="dstport">
+             <property name="text">
+              <string>Dest port</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1" colspan="6">
+            <widget class="QLineEdit" name="dstport_filter">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QCheckBox" name="action">
+             <property name="text">
+              <string>Action</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QComboBox" name="action_filter">
+             <item>
+              <property name="text">
+               <string>Reject</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Accept</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="4" column="2" colspan="5">
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>408</width>
+               <height>28</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="5" column="0">
+            <widget class="QCheckBox" name="hp">
+             <property name="text">
+              <string>Hook point</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1" colspan="2">
+            <widget class="QComboBox" name="hp_filter">
+             <item>
+              <property name="text">
+               <string>PRE_ROUTING</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>POST_ROUTING</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="5" column="3" colspan="4">
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>358</width>
+               <height>28</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="6" column="0">
+            <widget class="QCheckBox" name="time">
+             <property name="text">
+              <string>Time</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1" colspan="3">
+            <widget class="QDateTimeEdit" name="start_time">
+             <property name="displayFormat">
+              <string>yyyy/M/d hh:mm:ss</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="4">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>~</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="5">
+            <widget class="QDateTimeEdit" name="end_time">
+             <property name="displayFormat">
+              <string>yyyy/M/d hh:mm:ss</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="6">
+            <spacer name="horizontalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>138</width>
+               <height>28</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
+    <widget class="QPushButton" name="btn_activate">
+     <property name="text">
+      <string>Search</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

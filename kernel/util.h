@@ -26,9 +26,9 @@ void delink_rule(fwrule*);
 void inlink_rule(fwrule*, unsigned, unsigned, unsigned);
 void inlinkend_rule(fwrule*, unsigned, unsigned);
 fwrule* rule_indexer(unsigned, unsigned, unsigned);
-void inlink_nat(nat_config*);
-void delink_nat(nat_config*);
-nat_config* nat_indexer(nat_config*);
+void inlink_nat_rule(nat_config*);
+void delink_nat_rule(nat_config*);
+nat_config* nat_rule_indexer(nat_config*);
 bool save_all_rules(const char*);
 bool load_all_rules(const char*);
 void del_all_rules(void);
@@ -36,6 +36,7 @@ rule_ifh* get_rule_for_output(unsigned, unsigned);
 
 bool is_inCIDR(unsigned int, CIDR*);
 bool is_inrange(unsigned short, port_range*, unsigned int);
+bool is_local_addr(unsigned);
 
 tu_header* get_tcp_header(struct iphdr*, struct tcphdr*);
 tu_header* get_udp_header(struct iphdr*, struct udphdr*);
@@ -47,6 +48,7 @@ unsigned extract_connections(void*, unsigned, unsigned);
 char* get_string_from_user(char*);
 unsigned extract_logs(void*, unsigned, unsigned);
 unsigned extract_new_logs(void*, unsigned, unsigned);
+unsigned extract_nat_configs(nat_config_touser*, unsigned);
 
 char* ip_ntoa(unsigned);
 char* range_tostring(port_range*, unsigned);
@@ -57,7 +59,7 @@ void icmp_bucket_status(void);
 unsigned count_tu_bucket(connection*);
 unsigned count_icmp_bucket(icmp_connection*);
 
-nat_config* match_pat(unsigned, unsigned short);
-bool is_conflict_with_pat(unsigned, unsigned short);
+nat_config* match_pat(unsigned, unsigned);
+unsigned short new_pat_port(void);
 
 # endif

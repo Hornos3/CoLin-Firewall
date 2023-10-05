@@ -3,19 +3,15 @@
 
 #define DEBUG_MODE  // for debug
 
-#ifdef DEBUG_MODE
-#define dbg_printk printk  // use _printk for debug output
-#define dbg_printk_ipaddr printk_ipaddr
-#else
-#define dbg_printk
-#endif
-
+#include <linux/in.h>
 #include <linux/ip.h>
 #include <linux/tcp.h>
+#include <linux/udp.h>
 #include <linux/file.h>
 #include <linux/icmp.h>
 #include <linux/timer.h>
 #include <linux/types.h>
+#include <linux/inetdevice.h>
 
 #define WORD_SIZE 64
 
@@ -33,10 +29,7 @@
 
 // hook points
 #define	HP_PRE_ROUTING		0
-#define	HP_LOCAL_IN			1	
-#define	HP_LOCAL_OUT		2
-#define	HP_FORWARD			3
-#define	HP_POST_ROUTING		4
+#define	HP_POST_ROUTING		1
 
 typedef struct CIDR{
 	unsigned int ip;
@@ -65,8 +58,7 @@ typedef struct NAT_dynamic_config{  // NOT SUPPORTED
 
 typedef struct NAT_PAT_config{
 	CIDR lan;
-    unsigned wan;
-	port_range ports;
+    unsigned wan;       // outer address of gateway
 }NAT_PAT_config;
 
 typedef struct NAT_config{
@@ -80,7 +72,16 @@ typedef struct NAT_config{
     struct NAT_config* next;
 }nat_config;
 
-#define HOOK_CNT 5
+typedef struct NAT_config_touser{
+    unsigned char NAT_mode;
+    union{
+        NAT_static_config sc;
+        NAT_dynamic_config dc;
+        NAT_PAT_config pc;
+    }config;
+}nat_config_touser;
+
+#define HOOK_CNT 2
 #define PROTOCOL_SUPPORTED 3
 #define DEFAULT_OPTIONS 2
 

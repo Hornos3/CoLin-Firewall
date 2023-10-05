@@ -29,11 +29,6 @@ rule_adder::rule_adder(QWidget *parent) :
     ui->position->setValidator(validator_int);
     ui->timeout_isset->setChecked(false);
     ui->timeout->setEnabled(false);
-    ui->proto->setStyleSheet("QComboBox::item:selected { background-color: blue }");
-    ui->hook->setStyleSheet("QComboBox::item:selected { background-color: blue }");
-    ui->action->setStyleSheet("QComboBox::item:selected { background-color: blue }");
-    ui->log->setStyleSheet("QComboBox::item:selected { background-color: blue }");
-
     memset(&tbi, 0, sizeof(rule_tbi));
 }
 
@@ -79,7 +74,7 @@ void rule_adder::on_srcports_editingFinished()
         return;
     if(!check_range(ui->srcports->text(), tbi.rule.src_ports, &tbi.rule.src_port_len)){
         QMessageBox::critical(this, "Input error", "range format error!");
-        ui->dstip_mask->setText("");
+        ui->srcports->setText("");
     }
 }
 
@@ -89,7 +84,7 @@ void rule_adder::on_dstports_editingFinished()
         return;
     if(!check_range(ui->dstports->text(), tbi.rule.dst_ports, &tbi.rule.dst_port_len)){
         QMessageBox::critical(this, "Input error", "range format error!");
-        ui->dstip_mask->setText("");
+        ui->dstports->setText("");
     }
 }
 
@@ -99,7 +94,7 @@ void rule_adder::on_srcip_0_editingFinished()
     int target = ui->srcip_0->text().toInt(&ok);
     if(!ok || !(0 <= target && target <= 255)){
         QMessageBox::warning(this, "error", "Invalid input!");
-        ui->dstip_mask->setText("");
+        ui->srcip_0->setText("");
         return;
     }
     tbi.rule.src_ip.ip = (tbi.rule.src_ip.ip & 0x00FFFFFF) ^ target << 24;
@@ -111,7 +106,7 @@ void rule_adder::on_srcip_1_editingFinished()
     int target = ui->srcip_1->text().toInt(&ok);
     if(!ok || !(0 <= target && target <= 255)){
         QMessageBox::warning(this, "error", "Invalid input!");
-        ui->dstip_mask->setText("");
+        ui->srcip_1->setText("");
         return;
     }
     tbi.rule.src_ip.ip = (tbi.rule.src_ip.ip & 0xFF00FFFF) ^ target << 16;
@@ -123,7 +118,7 @@ void rule_adder::on_srcip_2_editingFinished()
     int target = ui->srcip_2->text().toInt(&ok);
     if(!ok || !(0 <= target && target <= 255)){
         QMessageBox::warning(this, "error", "Invalid input!");
-        ui->dstip_mask->setText("");
+        ui->srcip_2->setText("");
         return;
     }
     tbi.rule.src_ip.ip = (tbi.rule.src_ip.ip & 0xFFFF00FF) ^ target << 8;
@@ -135,7 +130,7 @@ void rule_adder::on_srcip_3_editingFinished()
     int target = ui->srcip_3->text().toInt(&ok);
     if(!ok || !(0 <= target && target <= 255)){
         QMessageBox::warning(this, "error", "Invalid input!");
-        ui->dstip_mask->setText("");
+        ui->srcip_3->setText("");
         return;
     }
     tbi.rule.src_ip.ip = (tbi.rule.src_ip.ip & 0xFFFFFF00) ^ target;
@@ -144,7 +139,7 @@ void rule_adder::on_srcip_3_editingFinished()
 void rule_adder::on_srcip_mask_editingFinished()
 {
     bool ok;
-    int target = ui->srcip_3->text().toInt(&ok);
+    int target = ui->srcip_mask->text().toInt(&ok);
     if(!ok || !(0 <= target && target <= 32)){
         QMessageBox::warning(this, "error", "Invalid input!");
         ui->srcip_mask->setText("");
@@ -159,7 +154,7 @@ void rule_adder::on_dstip_0_editingFinished()
     int target = ui->dstip_0->text().toInt(&ok);
     if(!ok || !(0 <= target && target <= 255)){
         QMessageBox::warning(this, "error", "Invalid input!");
-        ui->dstip_mask->setText("");
+        ui->dstip_0->setText("");
         return;
     }
     tbi.rule.dst_ip.ip = (tbi.rule.dst_ip.ip & 0x00FFFFFF) ^ target << 24;
@@ -171,7 +166,7 @@ void rule_adder::on_dstip_1_editingFinished()
     int target = ui->dstip_1->text().toInt(&ok);
     if(!ok || !(0 <= target && target <= 255)){
         QMessageBox::warning(this, "error", "Invalid input!");
-        ui->dstip_mask->setText("");
+        ui->dstip_1->setText("");
         return;
     }
     tbi.rule.dst_ip.ip = (tbi.rule.dst_ip.ip & 0xFF00FFFF) ^ target << 16;
@@ -183,7 +178,7 @@ void rule_adder::on_dstip_2_editingFinished()
     int target = ui->dstip_2->text().toInt(&ok);
     if(!ok || !(0 <= target && target <= 255)){
         QMessageBox::warning(this, "error", "Invalid input!");
-        ui->dstip_mask->setText("");
+        ui->dstip_2->setText("");
         return;
     }
     tbi.rule.dst_ip.ip = (tbi.rule.dst_ip.ip & 0xFFFF00FF) ^ target << 8;
@@ -195,7 +190,7 @@ void rule_adder::on_dstip_3_editingFinished()
     int target = ui->dstip_3->text().toInt(&ok);
     if(!ok || !(0 <= target && target <= 255)){
         QMessageBox::warning(this, "error", "Invalid input!");
-        ui->dstip_mask->setText("");
+        ui->dstip_3->setText("");
         return;
     }
     tbi.rule.dst_ip.ip = (tbi.rule.dst_ip.ip & 0xFFFFFF00) ^ target;

@@ -13,14 +13,12 @@
 #include <QStandardItemModel>
 
 #define	HP_PRE_ROUTING		0
-#define	HP_LOCAL_IN			1
-#define	HP_LOCAL_OUT		2
-#define	HP_FORWARD			3
-#define	HP_POST_ROUTING		4
+#define	HP_POST_ROUTING		1
 
 #define INFO_CON            0
 #define INFO_RULE           1
 #define INFO_LOG            2
+#define INFO_NAT            3
 
 #define PROTO_TCP           0
 #define PROTO_UDP           1
@@ -29,7 +27,12 @@
 #define RULE_UDP            PROTO_UDP
 #define RULE_ICMP           PROTO_ICMP
 
-#define HOOK_CNT 5
+// NAT_mode
+#define NAT_NONE        0
+#define NAT_STATIC 		1
+#define NAT_DYNAMIC 	2
+#define NAT_PAT     	3
+
 #define INFO_CNT 3
 
 #define MAX_RANGE_IN_A_RULE 32
@@ -47,6 +50,8 @@
 #define IOCTL_GET_RULE      0x20
 #define IOCTL_DEL_RULE      0x40
 
+#define IOCTL_GET_PAT       0x2D
+#define IOCTL_ADDDEL_NAT    0x2E
 #define IOCTL_SET_CONFIG    0x2F
 #define IOCTL_SET_RULE_PATH 0x3D
 #define IOCTL_GET_RULE_PATH 0x3E
@@ -79,11 +84,12 @@
     (proto == RULE_UDP) ? sizeof(udp_log) * log_length[RULE_UDP] : \
     sizeof(icmp_log) * log_length[RULE_ICMP]))
 #define MAX_RULE_BUFLEN (sizeof(rule_ifh) + sizeof(fwrule_user) * max_rule)
+#define MAX_NAT_BUFLEN (sizeof(nat_config_touser) * max_nat)
 #define RULEOUT_SIZE(x) (((rule_ifh*)x)->rule_num * sizeof(fwrule_user) + sizeof(rule_ifh))
 
 #define SPACE(str) (QString("   ") + (str) + "   ")
 
-#define HOOK_CNT 5
+#define HOOK_CNT 2
 #define PROTOCOL_SUPPORTED 3
 
 typedef struct CIDR{
@@ -113,7 +119,7 @@ typedef struct NAT_dynamic_config{
 
 typedef struct NAT_PAT_config{
     CIDR lan;
-    port_range wan;
+    unsigned wan;       // outer address of gateway
 }NAT_PAT_config;
 
 typedef struct NAT_config{
@@ -123,7 +129,18 @@ typedef struct NAT_config{
         NAT_dynamic_config dc;
         NAT_PAT_config pc;
     }config;
-}NAT_config;
+    struct NAT_config* prev;
+    struct NAT_config* next;
+}nat_config;
+
+typedef struct NAT_config_touser{
+    unsigned char NAT_mode;
+    union{
+        NAT_static_config sc;
+        NAT_dynamic_config dc;
+        NAT_PAT_config pc;
+    }config;
+}nat_config_touser;
 
 typedef struct lhy_firewall_rule_user{
     CIDR src_ip;
@@ -180,32 +197,35 @@ typedef struct icmp_con_touser{
 
 typedef struct tcpudp_con_touser{
     tu_header header;
+    ipport pat;
     size_t last;
     unsigned timeout;
 }tu_con_touser;
 
 typedef struct icmp_log{
-    unsigned long long timestamp;   // 0x00
-    unsigned srcip;                 // 0x08
-    unsigned dstip;                 // 0x0C
-    unsigned char proto;            // 0x10
-    unsigned char action;           // 0x11
-    unsigned char type;             // 0x12
-    unsigned char code;             // 0x13
+    unsigned long long timestamp;
+    unsigned srcip;
+    unsigned dstip;
+    unsigned char proto;
+    unsigned char hp;
+    unsigned char action;
+    unsigned char type;
+    unsigned char code;
     unsigned length;
 }icmp_log;
 
 typedef struct tcp_log{
-    unsigned long long timestamp;   // 0x00
-    unsigned srcip;                 // 0x08
-    unsigned dstip;                 // 0x0C
-    unsigned char proto;            // 0x10
-    unsigned char action;           // 0x11
-    unsigned short sport;           // 0x12
-    unsigned short dport;           // 0x14
-    unsigned seq;                   // 0x18
-    unsigned ack_seq;               // 0x1C
-    unsigned char fin:1,            // 0x20
+    unsigned long long timestamp;
+    unsigned srcip;
+    unsigned dstip;
+    unsigned char proto;
+    unsigned char hp;
+    unsigned char action;
+    unsigned short sport;
+    unsigned short dport;
+    unsigned seq;
+    unsigned ack_seq;
+    unsigned char fin:1,
                   syn:1,
                   rst:1,
                   psh:1,
@@ -217,13 +237,14 @@ typedef struct tcp_log{
 }tcp_log;
 
 typedef struct udp_log{
-    unsigned long long timestamp;   // 0x00
-    unsigned srcip;                 // 0x08
-    unsigned dstip;                 // 0x0C
-    unsigned char proto;            // 0x10
-    unsigned char action;           // 0x11
-    unsigned short sport;           // 0x12
-    unsigned short dport;           // 0x14
+    unsigned long long timestamp;
+    unsigned srcip;
+    unsigned dstip;
+    unsigned char proto;
+    unsigned char hp;
+    unsigned char action;
+    unsigned short sport;
+    unsigned short dport;
     unsigned length;
 }udp_log;
 
@@ -247,12 +268,13 @@ typedef struct config_user{
 extern QStandardItemModel* connection_models[PROTOCOL_SUPPORTED];
 extern QStandardItemModel* rule_models[HOOK_CNT][PROTOCOL_SUPPORTED];
 extern QStandardItemModel* log_models[PROTOCOL_SUPPORTED];
+extern QStandardItemModel* nat_model;
 extern unsigned log_model_ptr[PROTOCOL_SUPPORTED];
 extern int devfd;
 extern int frontend_update_interval;
 
 // configs
-#define CONFIG_CNT 17
+#define CONFIG_CNT 18
 extern unsigned TCP_syn_timeout;                                    // config code = 0
 extern unsigned TCP_fin_timeout;                                    // 1
 extern unsigned initial_timeout[PROTOCOL_SUPPORTED];                // 2-4
@@ -262,10 +284,17 @@ extern unsigned UDP_con_timeout_fixed;                              // 9
 extern unsigned max_con[PROTOCOL_SUPPORTED];                        // 10-12
 extern unsigned log_length[PROTOCOL_SUPPORTED];                     // 13-15
 extern unsigned max_rule;                                           // 16
+extern unsigned max_nat;                                            // 17
 extern unsigned default_strategy[HOOK_CNT][PROTOCOL_SUPPORTED];
 extern unsigned rows_per_show;
 extern bool autosave_log;
 extern QString autosave_path;
+
+extern const QStringList rule_headers[PROTOCOL_SUPPORTED];
+extern const QStringList log_headers[PROTOCOL_SUPPORTED];
+extern const QStringList nat_headers;
+
+extern QStandardItemModel filter_model;
 
 #define SET_DEFAULT(hook, proto, bit, x) \
     ((default_strategy[hook][proto] & (0x7F ^ (1 << bit))) | (x << bit))
@@ -287,6 +316,7 @@ extern QString autosave_path;
 #define CONF_UDP_MAX_LOG    14
 #define CONF_ICMP_MAX_LOG   15
 #define CONF_MAX_RULE       16
+#define CONF_MAX_NAT        17
 
 extern unsigned* configs[CONFIG_CNT];
 extern char rule_path[256];

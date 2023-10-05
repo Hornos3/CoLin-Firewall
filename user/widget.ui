@@ -75,66 +75,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="local_out">
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>LOCAL_OUT</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="autoExclusive">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="local_in">
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>LOCAL_IN</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="autoExclusive">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="forward">
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>FORWARD</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="autoExclusive">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="post_routing">
          <property name="font">
           <font>
@@ -264,6 +204,19 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="btn_nats">
+       <property name="text">
+        <string>NAT configs</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoExclusive">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -277,6 +230,13 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="btn_logfilter">
+       <property name="text">
+        <string>Log filter</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="btn_addrule">
        <property name="text">
         <string>Add rule</string>
@@ -287,6 +247,20 @@
       <widget class="QPushButton" name="btn_deleterule">
        <property name="text">
         <string>Delete rule</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_addnat">
+       <property name="text">
+        <string>Add NAT</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_delnat">
+       <property name="text">
+        <string>Delete NAT</string>
        </property>
       </widget>
      </item>

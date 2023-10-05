@@ -29,6 +29,16 @@ void log_table::update_log(unsigned proto){
         break;
     }
     }
+    free(data);
+    if(autosave_log){       // automatically write readable logs
+        QFile logfile(autosave_path);
+        logfile.open(QIODevice::Append | QIODevice::Text);
+        for(auto x: temp){
+            logfile.write(x.join(",").toStdString().c_str());
+            logfile.write("\n");
+        }
+        logfile.close();
+    }
     if(temp.length() == 0)
         return;
     int rowCount = log_models[proto]->rowCount();
@@ -69,15 +79,16 @@ QList<QString> log_table::analyse_kernel_info(tcp_log* log){
     QList<QString> ret;
     ret << usectime_tostring(log->timestamp);
     QHostAddress ipaddr(log->srcip);
-    ret << SPACE(ipaddr.toString() + ":" + QString::number(log->sport));
+    ret << ipaddr.toString() + ":" + QString::number(log->sport);
     ipaddr.setAddress(log->dstip);
-    ret << SPACE(ipaddr.toString() + ":" + QString::number(log->dport));
+    ret << ipaddr.toString() + ":" + QString::number(log->dport);
     if(log->action)
-        ret << SPACE("ACCEPT");
+        ret << "ACCEPT";
     else
-        ret << SPACE("REJECT");
-    ret << SPACE(QString::number(log->seq));
-    ret << SPACE(QString::number(log->ack_seq));
+        ret << "REJECT";
+    ret << hook_names[log->hp];
+    ret << QString::number(log->seq);
+    ret << QString::number(log->ack_seq);
     QStringList symbols;
     if(log->fin)
         symbols << "FIN";
@@ -95,8 +106,8 @@ QList<QString> log_table::analyse_kernel_info(tcp_log* log){
         symbols << "ECE";
     if(log->cwr)
         symbols << "CWR";
-    ret << SPACE(symbols.join(", "));
-    ret << SPACE(QString::number(log->length));
+    ret << symbols.join(", ");
+    ret << QString::number(log->length);
     return ret;
 }
 
@@ -104,14 +115,15 @@ QList<QString> log_table::analyse_kernel_info(udp_log* log){
     QList<QString> ret;
     ret << usectime_tostring(log->timestamp);
     QHostAddress ipaddr(log->srcip);
-    ret << SPACE(ipaddr.toString() + ":" + QString::number(log->sport));
+    ret << ipaddr.toString() + ":" + QString::number(log->sport);
     ipaddr.setAddress(log->dstip);
-    ret << SPACE(ipaddr.toString() + ":" + QString::number(log->dport));
+    ret << ipaddr.toString() + ":" + QString::number(log->dport);
     if(log->action)
-        ret << SPACE("ACCEPT");
+        ret << "ACCEPT";
     else
-        ret << SPACE("REJECT");
-    ret << SPACE(QString::number(log->length));
+        ret << "REJECT";
+    ret << hook_names[log->hp];
+    ret << QString::number(log->length);
     return ret;
 }
 
@@ -119,15 +131,16 @@ QList<QString> log_table::analyse_kernel_info(icmp_log* log){
     QList<QString> ret;
     ret << usectime_tostring(log->timestamp);
     QHostAddress ipaddr(log->srcip);
-    ret << SPACE(ipaddr.toString());
+    ret << ipaddr.toString();
     ipaddr.setAddress(log->dstip);
-    ret << SPACE(ipaddr.toString());
-    ret << SPACE(QString::number(log->type));
-    ret << SPACE(QString::number(log->code));
+    ret << ipaddr.toString();
+    ret << QString::number(log->type);
+    ret << QString::number(log->code);
     if(log->action)
-        ret << SPACE("ACCEPT");
+        ret << "ACCEPT";
     else
-        ret << SPACE("REJECT");
-    ret << SPACE(QString::number(log->length));
+        ret << "REJECT";
+    ret << hook_names[log->hp];
+    ret << QString::number(log->length);
     return ret;
 }
