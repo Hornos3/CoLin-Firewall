@@ -65,3 +65,5 @@ char* proto_names[3] = {
 
 char rule_path[256] = "/etc/lhy_firewall/rules";
 char* default_rule_path = "/tmp/lhy_firewall/rules";
+unsigned host_ips[32] = {0};
+unsigned host_ip_len = 0;

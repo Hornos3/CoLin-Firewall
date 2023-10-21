@@ -59,6 +59,25 @@ unsigned int tcp_handler(void* priv, struct sk_buff* skb,
 
     if(mayexist != NULL){
         mayexist->last = this_moment_usec();
+
+        // This packet is not for the host, only need to check in PRE_ROUTING
+        if(!is_local_addr(pkg.myhdr->srvip) && !is_local_addr(pkg.myhdr->cliip)){
+            if(hook_point == HP_PRE_ROUTING){
+                if(!check_and_update_status(mayexist, &pkg)){
+                    if(mayexist->log)
+                        new_tcp_log(&pkg, REJECT, hook_point);
+                    goto tcp_drop;
+                }
+            }
+        }else{  // need to check in PRE_ROUTING and POST_ROUTING
+            if(!check_and_update_status(mayexist, &pkg)){
+                if(mayexist->log)
+                    new_tcp_log(&pkg, REJECT, hook_point);
+                printk("%d", mayexist->status);
+                goto tcp_drop;
+            }
+        }
+
         if(mayexist->log)
             new_tcp_log(&pkg, ACCEPT, hook_point);
         reset_timer(mayexist, RULE_TCP, get_next_timeout(mayexist->timeout, RULE_TCP));
@@ -261,6 +280,7 @@ static struct nf_hook_ops post_routing_op = {
 };
 
 static int activate_hook(void){
+    get_all_host_ips();
     // init etc files
     memset(rule_path, 0, sizeof(rule_path));
     struct file *file;

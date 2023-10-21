@@ -141,16 +141,14 @@ void* add_connection(void* pkt, unsigned proto, bool log){
             new_con->hash = ((tcp_pkt *) pkt)->hash;
             new_con->timeout = initial_timeout[RULE_TCP];
             new_con->last = this_moment_usec();
+            new_con->status = TCP_CON_SYN;
             // debug output
 #ifdef DEBUG_MODE
-            char *srcip = ip_ntoa(((tcp_pkt *) pkt)->myhdr->cliip);
-            char *dstip = ip_ntoa(((tcp_pkt *) pkt)->myhdr->srvip);
             printk(KERN_INFO
-            "Added a new tcp connection: src ip = %s"
-            ", dst ip = %s, sport = %d, dport = %d, hash = %016lx\n", srcip, dstip,
-                    ((tcp_pkt *) pkt)->myhdr->cliport, ((tcp_pkt *) pkt)->myhdr->srvport, new_con->hash);
-            kfree(srcip);
-            kfree(dstip);
+            "Added a new tcp connection: src ip = %pI4"
+            ", dst ip = %pI4, sport = %d, dport = %d, hash = %016lx\n", &((tcp_pkt *) pkt)->myhdr->cliip,
+                    &((tcp_pkt *) pkt)->myhdr->srvip, ((tcp_pkt *) pkt)->myhdr->cliport,
+                    ((tcp_pkt *) pkt)->myhdr->srvport, new_con->hash);
 #endif
         } else {
             memcpy(&new_con->header, ((udp_pkt *) pkt)->myhdr, sizeof(tu_header));
@@ -159,14 +157,11 @@ void* add_connection(void* pkt, unsigned proto, bool log){
             new_con->last = this_moment_usec();
             // debug output
 #ifdef DEBUG_MODE
-            char *srcip = ip_ntoa(((udp_pkt *) pkt)->myhdr->cliip);
-            char *dstip = ip_ntoa(((udp_pkt *) pkt)->myhdr->srvip);
             printk(KERN_INFO
-            "Added a new udp connection: src ip = %s"
-            ", dst ip = %s, sport = %d, dport = %d, hash = %016lx\n", srcip, dstip,
-                    ((udp_pkt *) pkt)->myhdr->cliport, ((udp_pkt *) pkt)->myhdr->srvport, new_con->hash);
-            kfree(srcip);
-            kfree(dstip);
+            "Added a new udp connection: src ip = %pI4"
+            ", dst ip = %pI4, sport = %d, dport = %d, hash = %016lx\n", &((udp_pkt *) pkt)->myhdr->cliip,
+                    &((udp_pkt *) pkt)->myhdr->srvip, ((udp_pkt *) pkt)->myhdr->cliport,
+                    ((udp_pkt *) pkt)->myhdr->srvport, new_con->hash);
 #endif
         }
         spin_lock(&con_lock);       // LOCK FOR LINKED LIST CHANGES
@@ -187,6 +182,70 @@ void* add_connection(void* pkt, unsigned proto, bool log){
         spin_unlock(&con_lock);     // UNLOCK
         return new_con;
 	}
+}
+
+bool check_and_update_status(connection* con, tcp_pkt* pkg){
+    if(pkg->header->rst){
+        con->status = TCP_CON_CLOSED;
+        return 1;
+    }
+    switch(con->status){
+        case TCP_CON_SYN:
+            if(pkg->header->ack && pkg->header->syn){
+                con->status = TCP_CON_SYNACK;
+                return 1;
+            }else if(pkg->header->syn)  // repeated packet
+                return 1;
+            else
+                goto undefined;
+        case TCP_CON_SYNACK:
+            if(pkg->header->ack){
+                con->status = TCP_CON_CONNECTED;
+                return 1;
+            }else if(pkg->header->ack && pkg->header->syn)  // repeated packet
+                return 1;
+            else
+                goto undefined;
+        case TCP_CON_CONNECTED:
+            if(pkg->header->fin && pkg->header->ack){
+                con->status = TCP_CON_FIN_1;
+                return 1;
+            }else
+                return 1;
+        case TCP_CON_FIN_1:
+            if(pkg->header->ack){
+                con->status = TCP_CON_ACK_1;
+                return 1;
+            }else if(pkg->header->fin && pkg->header->ack)  // repeated packet
+                return 1;
+            else
+                goto undefined;
+        case TCP_CON_ACK_1:
+            if(pkg->header->fin && pkg->header->ack){
+                con->status = TCP_CON_FIN_2;
+                return 1;
+            }else if(pkg->header->ack)  // repeated packet
+                return 1;
+            else
+                goto undefined;
+        case TCP_CON_FIN_2:
+            if(pkg->header->ack){
+                con->status = TCP_CON_CLOSED;
+                return 1;
+            }else if(pkg->header->fin && pkg->header->ack)  // repeated packet
+                return 1;
+            else
+                goto undefined;
+        case TCP_CON_CLOSED:
+            if(pkg->header->ack)    // repeated packet
+                return 1;
+            else
+                goto undefined;
+        default:
+            return 0;
+    }
+    undefined:
+    return 0;
 }
 
 connection* add_fake_connection(connection* con){

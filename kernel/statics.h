@@ -68,3 +68,5 @@ extern char* hp_names[5];
 extern char* proto_names[3];
 extern char rule_path[256];
 extern char* default_rule_path;
+extern unsigned host_ips[32];
+extern unsigned host_ip_len;

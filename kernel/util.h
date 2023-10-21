@@ -62,4 +62,6 @@ unsigned count_icmp_bucket(icmp_connection*);
 nat_config* match_pat(unsigned, unsigned);
 unsigned short new_pat_port(void);
 
+void get_all_host_ips(void);
+
 # endif

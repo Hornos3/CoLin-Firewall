@@ -47,6 +47,7 @@ typedef struct TCPUDP_connection{
     struct TCPUDP_connection* con_ptr;    // if is_nat_con, it points to the real connection, else the fake connection
     unsigned next_seq;
     unsigned next_ackseq;
+    unsigned status;
 }tcp_connection, udp_connection, connection;
 
 typedef struct ICMP_connection{
@@ -70,6 +71,7 @@ void* add_connection(void*, unsigned, bool);
 void del_tu_connection(connection*, bool);
 void del_icmp_connection(icmp_connection*, bool);
 connection* add_fake_connection(connection*);
+bool check_and_update_status(connection*, tcp_pkt*);
 
 bool compare_icmp_hdr_strict(icmp_header*, icmp_header*);
 bool compare_tu_hdr_strict(tu_header*, tu_header*);

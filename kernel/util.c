@@ -10,6 +10,8 @@
 #include <linux/minmax.h>
 #include <linux/string.h>
 #include <linux/spinlock.h>
+#include <linux/netdevice.h>
+#include <linux/inetdevice.h>
 #include <crypto/hash.h>
 
 #include "util.h"
@@ -322,6 +324,14 @@ bool is_inrange(unsigned short port, port_range* ranges, unsigned int rlen){
         if(port >= ranges[i].start && port <= ranges[i].end)
             return true;
     return false;
+}
+
+bool is_local_addr(unsigned target){
+    for(int i=0; i<host_ip_len; i++){
+        if(host_ips[i] == target)
+            return 1;
+    }
+    return 0;
 }
 
 /******************** header functions ********************/
@@ -791,6 +801,27 @@ unsigned short new_pat_port(){
         if(!ports[i]){
             ports[i] = 1;
             return i;
+        }
+    }
+}
+
+/******************** other functions ********************/
+void get_all_host_ips(){
+    struct net_device* dev;
+    struct in_device* in_dev;
+    struct in_ifaddr* ifa;
+
+    host_ip_len = 0;
+
+    for_each_netdev(&init_net, dev){
+        if(dev->flags & IFF_UP){
+            in_dev = dev->ip_ptr;
+            ifa = in_dev->ifa_list;
+            while(ifa != NULL){
+                printk("%pI4\n", &ifa->ifa_local);
+                host_ips[host_ip_len++] = ntohl(ifa->ifa_local);
+                ifa = ifa->ifa_next;
+            }
         }
     }
 }
