@@ -67,7 +67,7 @@ bool add_rule(rule_tbi* tbi){
 
     if(from_user->rule.timeout != 0) {
         timer_setup(&new_rule->timer, rule_timer_callback, 0);
-        mod_timer(&new_rule->timer, HZ * from_user->rule.timeout);
+        mod_timer(&new_rule->timer, jiffies + HZ * from_user->rule.timeout);
     }
 #ifdef DEBUG_MODE
     char *srcip = ip_ntoa(from_user->rule.src_ip.ip);
@@ -104,11 +104,14 @@ void rule_timer_callback(struct timer_list* t){
 }
 
 bool del_rule(rule_tbd* tbd){
-    fwrule* ptr = rule_indexer(tbd->hp, tbd->proto, tbd->pos);
-    if(ptr == NULL)
-        return false;
-    del_timer(&ptr->timer);
     spin_lock(&rule_lock);          // LOCK FOR LINKED LIST CHANGES
+    fwrule* ptr = rule_indexer(tbd->hp, tbd->proto, tbd->pos);
+    if(ptr == NULL) {
+        printk(KERN_INFO "Failed to delete the rule of hook %d, protocol %d, index %d.", tbd->hp, tbd->proto, tbd->pos);
+        spin_unlock(&rule_lock);    // UNLOCK
+        return false;
+    }
+    del_timer(&ptr->timer);
     delink_rule(ptr);
     spin_unlock(&rule_lock);        // UNLOCK
 #ifdef DEBUG_MODE

@@ -345,10 +345,12 @@ bool log_filter::match(QList<QStandardItem*> log, unsigned proto){
         if(hp_activated && QString::compare(log[4]->text(), ui->hp_filter->currentText(), Qt::CaseInsensitive))
             return false;
         if(time_activated){
-            if(ui->start_time->dateTime() > QDateTime::fromString(log[0]->text(), "yyyy-MM-dd hh:mm:ss.zzz"))
+            if(ui->start_time->dateTime() > QDateTime::fromString(log[0]->text().mid(0, log[0]->text().length() - 3), "yyyy/MM/dd hh:mm:ss.zzz")){
                 return false;
-            if(ui->end_time->dateTime() < QDateTime::fromString(log[0]->text(), "yyyy-MM-dd hh:mm:ss.zzz"))
+            }
+            if(ui->end_time->dateTime() < QDateTime::fromString(log[0]->text().mid(0, log[0]->text().length() - 3), "yyyy/MM/dd hh:mm:ss.zzz")){
                 return false;
+            }
         }
         return true;
     }

@@ -223,6 +223,7 @@ void inlinkend_rule(fwrule* new_rule, unsigned hp, unsigned protocol){
     rules_end[hp][protocol]->next = new_rule;
     new_rule->prev = rules_end[hp][protocol];
     new_rule->next = NULL;
+    rules_end[hp][protocol] = new_rule;
 }
 
 void delink_rule(fwrule* new_rule){
@@ -252,7 +253,7 @@ fwrule* rule_indexer(unsigned hp, unsigned proto, unsigned index){
     fwrule* ptr = rules[hp][proto];
     while(count < index && ptr != NULL){
         ptr = ptr->next;
-        index++;
+        count++;
     }
     return ptr;
 }
@@ -818,7 +819,6 @@ void get_all_host_ips(){
             in_dev = dev->ip_ptr;
             ifa = in_dev->ifa_list;
             while(ifa != NULL){
-                printk("%pI4\n", &ifa->ifa_local);
                 host_ips[host_ip_len++] = ntohl(ifa->ifa_local);
                 ifa = ifa->ifa_next;
             }

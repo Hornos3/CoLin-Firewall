@@ -73,7 +73,6 @@ unsigned int tcp_handler(void* priv, struct sk_buff* skb,
             if(!check_and_update_status(mayexist, &pkg)){
                 if(mayexist->log)
                     new_tcp_log(&pkg, REJECT, hook_point);
-                printk("%d", mayexist->status);
                 goto tcp_drop;
             }
         }
@@ -84,6 +83,10 @@ unsigned int tcp_handler(void* priv, struct sk_buff* skb,
         mayexist->timeout = get_next_timeout(mayexist->timeout, RULE_TCP);
         goto tcp_accept;
     }else{
+        if(!pkg.header->syn){
+            new_tcp_log(&pkg, REJECT, hook_point);
+            goto tcp_drop;
+        }
         unsigned match = match_rules(pkg.myhdr, hook_point, RULE_TCP);
         if(match & 2)
             new_tcp_log(&pkg, match & 1, hook_point);

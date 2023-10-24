@@ -57,23 +57,27 @@ settings::settings(QWidget *parent) :
         ui->default_table->setSpan(i, 0, 3, 1);
         for(int j=0; j<PROTOCOL_SUPPORTED; j++){
             QCheckBox* cb1 = new QCheckBox(this);
-            cb1->setChecked(default_strategy[i/3][j] & 1);
+            cb1->setChecked(default_strategy[i/PROTOCOL_SUPPORTED][j] & 1);
+            cb1->setText(cb1->isChecked() ? "Accept" : "Reject");
             connect(cb1, &QCheckBox::stateChanged, this, [cb1, i, j](){
-                if(set_default_strategy(i/3, j, 0, cb1->isChecked()))
-                    default_strategy[i/3][j] |= cb1->isChecked() << 0;
+                if(set_default_strategy(i/PROTOCOL_SUPPORTED, j, 0, cb1->isChecked())){
+                    default_strategy[i/PROTOCOL_SUPPORTED][j] ^= default_strategy[i/PROTOCOL_SUPPORTED][j] & 1;
+                    default_strategy[i/PROTOCOL_SUPPORTED][j] += cb1->isChecked() << 0;
+                }
                 cb1->setText(cb1->isChecked() ? "Accept" : "Reject");
             });
-            emit cb1->stateChanged(cb1->isChecked());
             ui->default_table->setCellWidget(i + j, 2, cb1);
 
             QCheckBox* cb2 = new QCheckBox(this);
-            cb2->setChecked(default_strategy[i/3][j] & 2);
+            cb2->setChecked(default_strategy[i/PROTOCOL_SUPPORTED][j] & 2);
+            cb2->setText(cb2->isChecked() ? "Log   " : "No Log");
             connect(cb2, &QCheckBox::stateChanged, this, [cb2, i, j](){
-                if(set_default_strategy(i/3, j, 1, cb2->isChecked()))
-                    default_strategy[i/3][j] |= cb2->isChecked() << 1;
+                if(set_default_strategy(i/PROTOCOL_SUPPORTED, j, 1, cb2->isChecked())){
+                    default_strategy[i/PROTOCOL_SUPPORTED][j] ^= default_strategy[i/PROTOCOL_SUPPORTED][j] & 2;
+                    default_strategy[i/PROTOCOL_SUPPORTED][j] += cb2->isChecked() << 1;
+                }
                 cb2->setText(cb2->isChecked() ? "Log   " : "No Log");
             });
-            emit cb2->stateChanged(cb2->isChecked());
             ui->default_table->setCellWidget(i + j, 3, cb2);
         }
     }
@@ -89,7 +93,7 @@ bool settings::set_config(unsigned cid, unsigned val){
         return false;
     config_user c = {cid, val};
     if(ioctl(devfd, IOCTL_SET_CONFIG, &c))
-        QMessageBox::critical(this, "config failed to set", "Failed to set TCP SYN timeout.");
+        QMessageBox::critical(this, "config failed to set", "Failed to set something.");
     else if((unsigned)ioctl(devfd, IOCTL_GET_CONFIG, cid) != val)
         QMessageBox::critical(this, "config set error", "A different value received from kernel, there may be a bug!");
     spinbox_maps[cid]->setValue(ioctl(devfd, IOCTL_GET_CONFIG, cid));
@@ -102,7 +106,7 @@ bool settings::set_config(unsigned cid, bool checked){
         return false;
     config_user c = {cid, checked};
     if(ioctl(devfd, IOCTL_SET_CONFIG, &c))
-        QMessageBox::critical(this, "config failed to set", "Failed to set TCP SYN timeout.");
+        QMessageBox::critical(this, "config failed to set", "Failed to set something.");
     else if(ioctl(devfd, IOCTL_GET_CONFIG, cid) != checked)
         QMessageBox::critical(this, "config set error", "A different value received from kernel, there may be a bug!");
     checkbox_maps[cid]->setChecked(ioctl(devfd, IOCTL_GET_CONFIG, cid));

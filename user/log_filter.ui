@@ -244,7 +244,7 @@
            <item row="6" column="1" colspan="3">
             <widget class="QDateTimeEdit" name="start_time">
              <property name="displayFormat">
-              <string>yyyy/M/d hh:mm:ss</string>
+              <string>yyyy/M/d hh:mm:ss.zzz</string>
              </property>
             </widget>
            </item>
@@ -258,7 +258,7 @@
            <item row="6" column="5">
             <widget class="QDateTimeEdit" name="end_time">
              <property name="displayFormat">
-              <string>yyyy/M/d hh:mm:ss</string>
+              <string>yyyy/M/d hh:mm:ss.zzz</string>
              </property>
             </widget>
            </item>

@@ -225,6 +225,7 @@ void rule_adder::on_proto_currentIndexChanged(int index)
 void rule_adder::on_hook_currentIndexChanged(int index)
 {
     tbi.rule.hook = index;
+    qDebug() << index;
 }
 
 void rule_adder::on_action_currentIndexChanged(int index)

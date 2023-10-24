@@ -571,21 +571,6 @@
            </item>
            <item>
             <property name="text">
-             <string>LOCAL_IN</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>LOCAL_OUT</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>FORWARD</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
              <string>POST_ROUTING</string>
             </property>
            </item>

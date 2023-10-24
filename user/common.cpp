@@ -109,6 +109,7 @@ void print_binary(char* buf, int length){
 }
 
 bool set_default_strategy(unsigned hook, unsigned proto, unsigned bit, bool val){
+    qDebug() << SET_DEFAULT(hook, proto, bit, val);
     if(ioctl(devfd, IOCTL_SET_DEFAULT | IOCTL_PROTO(proto) | hook, SET_DEFAULT(hook, proto, bit, val))){
         QMessageBox::warning(nullptr, "error", "Failed to set default strategy for unknown reason. There may be bugs!");
         return false;

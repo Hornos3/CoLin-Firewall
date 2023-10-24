@@ -153,8 +153,6 @@ typedef struct lhy_firewall_rule_user{
     unsigned int src_port_len;
     unsigned int dst_port_len;
     unsigned action;	// 0 for reject, 1 for accept
-    // NAT content
-    NAT_config nat_config;
     unsigned timeout;       // duration from user, timestamp to user, 0 for no expiration
     unsigned hook;
 }fwrule_user;

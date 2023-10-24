@@ -114,12 +114,10 @@ void* add_connection(void* pkt, unsigned proto, bool log){
 	    spin_unlock(&con_lock);     // UNLOCK
 	    // debug output
 	    #ifdef DEBUG_MODE
-	    char* srcip = ip_ntoa(pkg->myhdr->cliip);
-	    char* dstip = ip_ntoa(pkg->myhdr->srvip);
-	    printk(KERN_INFO "Added a new icmp connection: src ip = %s, dst ip = %s, hash = %016lx",
-               srcip, dstip, pkg->hash);
-	    kfree(srcip);
-	    kfree(dstip);
+        unsigned tmp1 = ntohl(pkg->myhdr->cliip);
+        unsigned tmp2 = ntohl(pkg->myhdr->srvip);
+	    printk(KERN_INFO "Added a new icmp connection: src ip = %pI4, dst ip = %pI4, hash = %016lx",
+                &tmp1, &tmp2, pkg->hash);
         #endif
         return new_con;
 	}else {
@@ -144,10 +142,12 @@ void* add_connection(void* pkt, unsigned proto, bool log){
             new_con->status = TCP_CON_SYN;
             // debug output
 #ifdef DEBUG_MODE
+            unsigned tmp1 = ntohl(((tcp_pkt *) pkt)->myhdr->cliip);
+            unsigned tmp2 = ntohl(((tcp_pkt *) pkt)->myhdr->srvip);
             printk(KERN_INFO
             "Added a new tcp connection: src ip = %pI4"
-            ", dst ip = %pI4, sport = %d, dport = %d, hash = %016lx\n", &((tcp_pkt *) pkt)->myhdr->cliip,
-                    &((tcp_pkt *) pkt)->myhdr->srvip, ((tcp_pkt *) pkt)->myhdr->cliport,
+            ", dst ip = %pI4, sport = %d, dport = %d, hash = %016lx\n", &tmp1,
+                    &tmp2, ((tcp_pkt *) pkt)->myhdr->cliport,
                     ((tcp_pkt *) pkt)->myhdr->srvport, new_con->hash);
 #endif
         } else {
@@ -157,10 +157,12 @@ void* add_connection(void* pkt, unsigned proto, bool log){
             new_con->last = this_moment_usec();
             // debug output
 #ifdef DEBUG_MODE
+            unsigned tmp1 = ntohl(((udp_pkt *) pkt)->myhdr->cliip);
+            unsigned tmp2 = ntohl(((udp_pkt *) pkt)->myhdr->srvip);
             printk(KERN_INFO
             "Added a new udp connection: src ip = %pI4"
-            ", dst ip = %pI4, sport = %d, dport = %d, hash = %016lx\n", &((udp_pkt *) pkt)->myhdr->cliip,
-                    &((udp_pkt *) pkt)->myhdr->srvip, ((udp_pkt *) pkt)->myhdr->cliport,
+            ", dst ip = %pI4, sport = %d, dport = %d, hash = %016lx\n", &tmp1,
+                    &tmp2, ((udp_pkt *) pkt)->myhdr->cliport,
                     ((udp_pkt *) pkt)->myhdr->srvport, new_con->hash);
 #endif
         }
@@ -299,19 +301,19 @@ void del_tu_connection(connection* con, bool timer){
     }
     spin_unlock(&con_lock);         // UNLOCK
     #ifdef DEBUG_MODE
-    char* srcip = ip_ntoa(con->header.cliip);
-    char* dstip = ip_ntoa(con->header.srvip);
-    if(con->proto == RULE_TCP)
-        printk("Deleted a tcp connection: src ip = %s, dst ip = %s, "
+    if(con->proto == RULE_TCP) {
+        unsigned tmp1 = ntohl(con->header.cliip);
+        unsigned tmp2 = ntohl(con->header.srvip);
+        printk("Deleted a tcp connection: src ip = %pI4, dst ip = %pI4, "
+               "sport = %d, dport = %d\n",
+               &tmp1, &tmp2, con->header.cliport, con->header.srvport);
+    }else if(con->proto == RULE_UDP){
+        unsigned tmp1 = ntohl(con->header.cliip);
+        unsigned tmp2 = ntohl(con->header.srvip);
+        printk("Deleted a udp connection: src ip = %pI4, dst ip = %pI4, "
             "sport = %d, dport = %d\n",
-            srcip, dstip, con->header.cliport, con->header.srvport);
-    else if(con->proto == RULE_UDP){
-        printk("Deleted a udp connection: src ip = %s, dst ip = %s, "
-            "sport = %d, dport = %d\n",
-            srcip, dstip, con->header.cliport, con->header.srvport);
+               &tmp1, &tmp2, con->header.cliport, con->header.srvport);
     }
-    kfree(srcip);
-    kfree(dstip);
     #endif
     kfree(con);
 }
@@ -324,11 +326,9 @@ void del_icmp_connection(icmp_connection* con, bool timer){
     con_count[RULE_ICMP]--;
     spin_unlock(&con_lock);         // UNLOCK
     #ifdef DEBUG_MODE
-    char* srcip = ip_ntoa(con->header.cliip);
-    char* dstip = ip_ntoa(con->header.srvip);
-    printk("Deleted a icmp connection: src ip = %s, dst ip = %s", srcip, dstip);
-    kfree(srcip);
-    kfree(dstip);
+    unsigned tmp1 = ntohl(con->header.cliip);
+    unsigned tmp2 = ntohl(con->header.srvip);
+    printk("Deleted a icmp connection: src ip = %pI4, dst ip = %pI4", &tmp1, &tmp2);
     #endif
     kfree(con);
 }

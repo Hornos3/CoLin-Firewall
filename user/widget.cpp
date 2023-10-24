@@ -187,51 +187,47 @@ void Widget::show_row_range(unsigned start, unsigned end){
 }
 
 void Widget::update_table(unsigned info, unsigned hook, unsigned proto){
-    QThread* update_thread = new QThread(this);
-    connect(update_thread, &QThread::started, this, [this, info, hook, proto](){
-        ui->infotable->setUpdatesEnabled(false);
-        switch(info){
-        case INFO_CON:
-            selected_model = connection_models[proto];
-            ui->infotable->setModel(selected_model);
-            con_table::update_connections(proto);
-            break;
-        case INFO_RULE:
-            selected_model = rule_models[hook][proto];
-            ui->infotable->setModel(selected_model);
-            rule_table::update_rules(hook, proto);
-            break;
-        case INFO_LOG:
-            selected_model = log_models[proto];
-            ui->infotable->setModel(selected_model);
-            log_table::update_log(proto);
-            break;
-        case INFO_NAT:
-            selected_model = nat_model;
-            ui->infotable->setModel(nat_model);
-            nat_table::update_nat();
-            break;
+    ui->infotable->setUpdatesEnabled(false);
+    switch(info){
+    case INFO_CON:
+        selected_model = connection_models[proto];
+        ui->infotable->setModel(selected_model);
+        con_table::update_connections(proto);
+        break;
+    case INFO_RULE:
+        selected_model = rule_models[hook][proto];
+        ui->infotable->setModel(selected_model);
+        rule_table::update_rules(hook, proto);
+        break;
+    case INFO_LOG:
+        selected_model = log_models[proto];
+        ui->infotable->setModel(selected_model);
+        log_table::update_log(proto);
+        break;
+    case INFO_NAT:
+        selected_model = nat_model;
+        ui->infotable->setModel(nat_model);
+        nat_table::update_nat();
+        break;
+    }
+    if((unsigned)selected_model->rowCount() <= rows_per_show)
+        ui->view_slider->setEnabled(false);
+    else
+        ui->view_slider->setEnabled(true);
+    ui->view_slider->setMaximum(floor(selected_model->rowCount() * 1.0 / rows_per_show));
+    if(log_models[current_proto]->rowCount() < log_length[current_proto])
+        show_row_range(ui->view_slider->value() * rows_per_show, (ui->view_slider->value() + 1) * rows_per_show);
+    else{
+        if(log_model_ptr[current_proto] + ui->view_slider->value() * rows_per_show < log_length[current_proto] &&
+           log_model_ptr[current_proto] + (ui->view_slider->value() + 1) * rows_per_show > log_length[current_proto]){
+            show_row_range(log_model_ptr[current_proto] + ui->view_slider->value() * rows_per_show, log_length[current_proto]);
+            show_row_range(0, log_model_ptr[current_proto] + (ui->view_slider->value() + 1) * rows_per_show - log_length[current_proto]);
+        }else{
+            show_row_range((log_model_ptr[current_proto] + ui->view_slider->value() * rows_per_show) % log_length[current_proto],
+                           (log_model_ptr[current_proto] + (ui->view_slider->value() + 1) * rows_per_show) % log_length[current_proto]);
         }
-        if((unsigned)selected_model->rowCount() <= rows_per_show)
-            ui->view_slider->setEnabled(false);
-        else
-            ui->view_slider->setEnabled(true);
-        ui->view_slider->setMaximum(floor(selected_model->rowCount() * 1.0 / rows_per_show));
-        if(log_models[current_proto]->rowCount() < log_length[current_proto])
-            show_row_range(ui->view_slider->value() * rows_per_show, (ui->view_slider->value() + 1) * rows_per_show);
-        else{
-            if(log_model_ptr[current_proto] + ui->view_slider->value() * rows_per_show < log_length[current_proto] &&
-               log_model_ptr[current_proto] + (ui->view_slider->value() + 1) * rows_per_show > log_length[current_proto]){
-                show_row_range(log_model_ptr[current_proto] + ui->view_slider->value() * rows_per_show, log_length[current_proto]);
-                show_row_range(0, log_model_ptr[current_proto] + (ui->view_slider->value() + 1) * rows_per_show - log_length[current_proto]);
-            }else{
-                show_row_range((log_model_ptr[current_proto] + ui->view_slider->value() * rows_per_show) % log_length[current_proto],
-                               (log_model_ptr[current_proto] + (ui->view_slider->value() + 1) * rows_per_show) % log_length[current_proto]);
-            }
-        }
-        ui->infotable->setUpdatesEnabled(true);
-    });
-    update_thread->start();
+    }
+    ui->infotable->setUpdatesEnabled(true);
 }
 
 void Widget::on_btn_addrule_clicked()
