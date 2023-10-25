@@ -25,7 +25,7 @@ ssize_t cdev_write(struct file* file, const char* __user buf, size_t size, loff_
 // Main operation function for this char device.
 // Usage:
 // command_code = 0b0101101: return pat rules, saved in (char*)arg;
-// command_code = 0b0101110: add a pat rule. arg: nat_config*, the last bit 0 for add,
+// command_code = 0b0101110: add/delete a pat rule. arg: nat_config*, the last bit 0 for add,
 //                           1 for delete
 // command_code = 0b0101111: set the config.
 // command_code = 0b0111101: set the file for saving rules, the kernel will try to
@@ -111,11 +111,11 @@ long cdev_ioctl(struct file* file, unsigned int command_code,
             if(!LSB(arg))
                 return add_nat((nat_config*)PTR(arg)) ? 0 : -1;
             nat_config nc;
-            if(copy_from_user(&nc, (void*)arg, sizeof(nat_config))){
+            if(copy_from_user(&nc, (void*)(arg ^ (arg & 1)), sizeof(nat_config))){
                 printk(KERN_ERR "Failed to get nat config from user.");
                 return -1;
             }
-            return del_nat(nat_rule_indexer(&nc)) ? -1 : 0;
+            return del_nat(&nc) ? 0 : -1;
         }
         case 0x2F:{
             config_user config;

@@ -23,6 +23,7 @@ SOURCES += \
     log_table.cpp \
     main.cpp \
     nat_adder.cpp \
+    nat_deler.cpp \
     nat_table.cpp \
     rule_adder.cpp \
     rule_deler.cpp \
@@ -37,6 +38,7 @@ HEADERS += \
     log_filter.h \
     log_table.h \
     nat_adder.h \
+    nat_deler.h \
     nat_table.h \
     rule_adder.h \
     rule_deler.h \
@@ -48,6 +50,7 @@ FORMS += \
     filter_widget.ui \
     log_filter.ui \
     nat_adder.ui \
+    nat_deler.ui \
     rule_adder.ui \
     rule_deler.ui \
     settings.ui \

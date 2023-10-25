@@ -285,6 +285,8 @@ void rule_adder::on_btn_add_rule_clicked()
         return;
     }
     int ret;
+    QFile logfile(maninst_path);
+    logfile.open(QIODevice::Append | QIODevice::Text);
     if(tbi.rule.hook == HOOK_CNT){  // Add rules in all hooks
         for(int i=0; i<HOOK_CNT; i++){
             tbi.rule.hook = i;
@@ -292,18 +294,73 @@ void rule_adder::on_btn_add_rule_clicked()
             if(!ret){
                 QMessageBox::warning(this, "error", "Error occured while adding a rule for "
                                      + hook_names[i] + ", errno " + QString::number(ret));
+                logfile.write(manlog_generator().toStdString().c_str());
+                logfile.write("\n");
+                logfile.close();
                 return;
             }
         }
         QMessageBox::information(this, "rule added", "Successfully added rules. You can observe it on the main widget now.");
+        logfile.write(manlog_generator().toStdString().c_str());
+        logfile.write("\n");
+        logfile.close();
         return;
     }else{
         ret = ioctl(devfd, IOCTL_ADD_RULE, &tbi);
-        if(!ret)
+        if(!ret){
+            logfile.write(manlog_generator().toStdString().c_str());
+            logfile.write(", FAILED TO ADD\n");
+            logfile.close();
             QMessageBox::warning(this, "error", "Error occured while adding a rule, errno " + QString::number(ret));
-        else
+        }
+        else{
+            logfile.write(manlog_generator().toStdString().c_str());
+            logfile.write("\n");
+            logfile.close();
             QMessageBox::information(this, "rule added", "Successfully added a rule. You can observe it on the main widget now.");
+        }
     }
+}
+
+QString rule_adder::manlog_generator(){
+    QString ret = sectime_tostring(QDateTime::currentSecsSinceEpoch());
+    ret += ": ";
+    switch(ui->proto->currentIndex()){
+    case RULE_TCP:
+    case RULE_UDP:{
+        if(ui->proto == RULE_TCP)
+            ret += "new TCP rule, ";
+        else
+            ret += "new UDP rule, ";
+        ret += "source ip " + ui->srcip_0->text() + "." + ui->srcip_1->text() + "." + ui->srcip_2->text() + "." + ui->srcip_3->text() + "/" + ui->srcip_mask->text() + ", ";
+        ret += "dest ip " + ui->dstip_0->text() + "." + ui->dstip_1->text() + "." + ui->dstip_2->text() + "." + ui->dstip_3->text() + "/" + ui->dstip_mask->text() + ", ";
+        ret += "source port " + ui->srcports->text() + ", ";
+        ret += "dest port " + ui->dstports->text() + ", ";
+        ret += "hook " + ui->hook->currentText() + ", ";
+        ret += "action" + ui->action->currentText() + ", ";
+        ret += ui->log->currentText() + ", ";
+        ret += "position " + ui->position->text() + ", ";
+        if(ui->timeout_isset->isChecked())
+            ret += "timeout " + ui->timeout->text() + "s";
+        else
+            ret += "timeout not set";
+        break;
+    }
+    case RULE_ICMP:{
+        ret += "source ip " + ui->srcip_0->text() + "." + ui->srcip_1->text() + "." + ui->srcip_2->text() + "." + ui->srcip_3->text() + "/" + ui->srcip_mask->text() + ", ";
+        ret += "dest ip " + ui->dstip_0->text() + "." + ui->dstip_1->text() + "." + ui->dstip_2->text() + "." + ui->dstip_3->text() + "/" + ui->dstip_mask->text() + ", ";
+        ret += "hook " + ui->hook->currentText() + ", ";
+        ret += "action" + ui->action->currentText() + ", ";
+        ret += ui->log->currentText() + ", ";
+        ret += "position " + ui->position->text() + ", ";
+        if(ui->timeout_isset->isChecked())
+            ret += "timeout " + ui->timeout->text() + "s";
+        else
+            ret += "timeout not set";
+        break;
+    }
+    }
+    return ret;
 }
 
 void rule_adder::on_srcip_0_returnPressed(){ui->srcip_1->setFocus();}

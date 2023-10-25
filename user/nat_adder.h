@@ -46,6 +46,8 @@ private slots:
 private:
     Ui::nat_adder *ui;
     nat_config nc;
+
+    QString manlog_generator();
 };
 
 #endif // NAT_ADDER_H

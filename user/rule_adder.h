@@ -104,6 +104,8 @@ private:
     Ui::rule_adder *ui;
 
     bool check_range(QString input, port_range dest[MAX_RANGE_IN_A_RULE], unsigned* range_len);
+    QString manlog_generator();
+
 };
 
 #endif // RULE_ADDER_H

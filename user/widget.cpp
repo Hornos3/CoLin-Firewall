@@ -49,6 +49,16 @@ Widget::Widget(QWidget *parent)
         }
     }
 
+    QFileInfo inst_file(maninst_path);   // logs for user instructions
+    if(!inst_file.exists()){
+        system("touch /etc/lhy_firewall/man_log");
+    }
+    QFile logfile(maninst_path);
+    logfile.open(QIODevice::Append | QIODevice::Text);
+    logfile.write(sectime_tostring(QDateTime::currentSecsSinceEpoch()).toStdString().c_str());
+    logfile.write(", GUI started by user");
+    logfile.close();
+
     for(int i=0; i<HOOK_CNT; i++)
         for(int j=0; j<PROTOCOL_SUPPORTED; j++){
             default_strategy[i][j] = ioctl(devfd, IOCTL_GET_DEFAULT + IOCTL_PROTO(j) + i, 0b10000000);
@@ -98,7 +108,6 @@ void Widget::closeEvent(QCloseEvent* e){
     update_timer.stop();
     shell("rmmod ../kernel/lhy_firewall.ko", "Successfully removed the kernel module.",
           "Failed to remove the kernel module.");
-    delete filter;
     exit(0);
 }
 
@@ -275,21 +284,21 @@ void Widget::on_btn_logs_clicked()
 void Widget::on_infotable_customContextMenuRequested(const QPoint &pos)
 {
     Q_UNUSED(pos);
-    if(ui->btn_rules->isDown()){
-        QModelIndexList selectedIndexes = ui->infotable->selectionModel()->selectedIndexes();
-        if(selectedIndexes.length() == 0)
-            return;
-        QMenu menu;
-        QAction* del_action = menu.addAction("Delete this rule");
-        connect(del_action, &QAction::triggered, this, [this, selectedIndexes](){
-            for(int i=0; i<selectedIndexes.length(); i++){
-                QModelIndex idx = selectedIndexes[i];
-                rule_tbd tbd = {(unsigned)protos->checkedId(), (unsigned)hooks->checkedId(), (unsigned)idx.row() + 1};
-                rule_deler::del_rule(&tbd);
-            }
-        });
-        menu.exec(QCursor::pos());
-    }
+//    if(ui->btn_rules->isDown()){
+//        QModelIndexList selectedIndexes = ui->infotable->selectionModel()->selectedIndexes();
+//        if(selectedIndexes.length() == 0)
+//            return;
+//        QMenu menu;
+//        QAction* del_action = menu.addAction("Delete this rule");
+//        connect(del_action, &QAction::triggered, this, [this, selectedIndexes](){
+//            for(int i=0; i<selectedIndexes.length(); i++){
+//                QModelIndex idx = selectedIndexes[i];
+//                rule_tbd tbd = {(unsigned)protos->checkedId(), (unsigned)hooks->checkedId(), (unsigned)idx.row() + 1};
+//                rule_deler::del_rule(&tbd);
+//            }
+//        });
+//        menu.exec(QCursor::pos());
+//    }
 }
 
 void Widget::on_view_slider_valueChanged(int value)
@@ -363,4 +372,10 @@ void Widget::on_btn_logfilter_clicked()
 {
     log_filter* filter = new log_filter();
     filter->show();
+}
+
+void Widget::on_btn_delnat_clicked()
+{
+    nat_deler* deler = new nat_deler();
+    deler->show();
 }

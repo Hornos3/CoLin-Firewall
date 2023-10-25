@@ -287,6 +287,7 @@ extern unsigned default_strategy[HOOK_CNT][PROTOCOL_SUPPORTED];
 extern unsigned rows_per_show;
 extern bool autosave_log;
 extern QString autosave_path;
+extern QString maninst_path;
 
 extern const QStringList rule_headers[PROTOCOL_SUPPORTED];
 extern const QStringList log_headers[PROTOCOL_SUPPORTED];

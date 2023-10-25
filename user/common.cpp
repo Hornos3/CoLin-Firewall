@@ -23,7 +23,8 @@ char rule_path[256];
 unsigned default_strategy[HOOK_CNT][PROTOCOL_SUPPORTED];
 unsigned rows_per_show = 20;
 bool autosave_log = true;   // save log through GUI, not kernel
-QString autosave_path = "/etc/lhy_firewall/log_autosave";   // a directory
+QString autosave_path = "/etc/lhy_firewall/log_autosave";
+QString maninst_path = "/etc/lhy_firewall/man_log";
 
 QStandardItemModel filter_model;
 

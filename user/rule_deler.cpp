@@ -55,14 +55,58 @@ bool rule_deler::del_rule(rule_tbd* tbd){
         QMessageBox::warning(nullptr, "error", "information format error!");
         return false;
     }
+    QString log_content = manlog_generator();
+    qDebug() << log_content;
     int ret = ioctl(devfd, IOCTL_DEL_RULE, tbd);
+    QFile logfile(maninst_path);
+    logfile.open(QIODevice::Append | QIODevice::Text);
     if(ret){
+        logfile.write(log_content.toStdString().c_str());
+        logfile.write(", FAILED TO DELETE\n");
+        logfile.close();
         QMessageBox::critical(nullptr, "error", "Error occured while deleting thie rule, errno " + QString::number(ret));
         return false;
     }
-    else
+    else{
+        logfile.write(log_content.toStdString().c_str());
+        logfile.write("\n");
+        logfile.close();
         QMessageBox::information(nullptr, "rule deleted", "Successfully deleted this rule.");
+    }
     return true;
+}
+
+QString rule_deler::manlog_generator(){
+    if(ui->position->text().toInt() > rule_models[ui->hook->currentIndex()][ui->proto->currentIndex()]->rowCount() || ui->position->text().toInt() <= 0)
+        return "Line number out of bound, there may be bugs in this Qt GUI!";
+    QString ret = sectime_tostring(QDateTime::currentSecsSinceEpoch());
+    ret += ": ";
+    switch(ui->proto->currentIndex()){
+    case RULE_TCP:
+    case RULE_UDP:{
+        if(ui->proto == RULE_TCP)
+            ret += "delete TCP rule, ";
+        else
+            ret += "delete UDP rule, ";
+        ret += "source ip " + rule_models[ui->hook->currentIndex()][ui->proto->currentIndex()]->item(ui->position->text().toInt()-1, 0)->text() + ", ";
+        ret += "dest ip " + rule_models[ui->hook->currentIndex()][ui->proto->currentIndex()]->item(ui->position->text().toInt()-1, 2)->text() + ", ";
+        ret += "source port " + rule_models[ui->hook->currentIndex()][ui->proto->currentIndex()]->item(ui->position->text().toInt()-1, 1)->text() + ", ";
+        ret += "dest port " + rule_models[ui->hook->currentIndex()][ui->proto->currentIndex()]->item(ui->position->text().toInt()-1, 3)->text() + ", ";
+        ret += "action " + rule_models[ui->hook->currentIndex()][ui->proto->currentIndex()]->item(ui->position->text().toInt()-1, 5)->text() + ", ";
+        ret += rule_models[ui->hook->currentIndex()][ui->proto->currentIndex()]->item(ui->position->text().toInt()-1, 6)->text() + ", ";  // log or not
+        ret += "position " + ui->position->text();
+        break;
+    }
+    case RULE_ICMP:{
+        ret += "source ip " + rule_models[ui->hook->currentIndex()][ui->proto->currentIndex()]->item(ui->position->text().toInt()-1, 0)->text() + ", ";
+        ret += "dest ip " + rule_models[ui->hook->currentIndex()][ui->proto->currentIndex()]->item(ui->position->text().toInt()-1, 2)->text() + ", ";
+        ret += "action " + rule_models[ui->hook->currentIndex()][ui->proto->currentIndex()]->item(ui->position->text().toInt()-1, 5)->text() + ", ";
+        ret += rule_models[ui->hook->currentIndex()][ui->proto->currentIndex()]->item(ui->position->text().toInt()-1, 6)->text() + ", ";  // log or not
+        ret += "position " + ui->position->text();
+        break;
+    }
+    }
+    return ret;
 }
 
 void rule_deler::on_btn_del_rule_clicked()

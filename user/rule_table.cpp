@@ -27,27 +27,25 @@ QList<QStandardItem*> rule_table::analyse_kernel_info(fwrule_user* from_kernel){
     case RULE_UDP:{
         // Sender IP, Sender Port, Receiver IP, Receiver Port, Protocol, Action
         QHostAddress ipaddr(from_kernel->src_ip.ip);
-        ret << new QStandardItem(SPACE(ipaddr.toString() + "/" + QString::number(from_kernel->src_ip.mask)));
-        ret << new QStandardItem(SPACE
-                   (range_to_string(from_kernel->src_ports, from_kernel->src_port_len)));
+        ret << new QStandardItem(ipaddr.toString() + "/" + QString::number(from_kernel->src_ip.mask));
+        ret << new QStandardItem(range_to_string(from_kernel->src_ports, from_kernel->src_port_len));
         ipaddr.setAddress(from_kernel->dst_ip.ip);
-        ret << new QStandardItem(SPACE(ipaddr.toString() + "/" + QString::number(from_kernel->dst_ip.mask)));
-        ret << new QStandardItem(SPACE
-                   (range_to_string(from_kernel->dst_ports, from_kernel->dst_port_len)));
-        ret << new QStandardItem(SPACE(from_kernel->protocol == RULE_TCP ? "TCP" : "UDP"));
-        ret << new QStandardItem(SPACE(from_kernel->action & 1 ? "ACCEPT" : "REJECT"));
-        ret << new QStandardItem(SPACE(from_kernel->action & 2 ? "LOG" : "NO LOG"));
+        ret << new QStandardItem(ipaddr.toString() + "/" + QString::number(from_kernel->dst_ip.mask));
+        ret << new QStandardItem(range_to_string(from_kernel->dst_ports, from_kernel->dst_port_len));
+        ret << new QStandardItem(from_kernel->protocol == RULE_TCP ? "TCP" : "UDP");
+        ret << new QStandardItem(from_kernel->action & 1 ? "ACCEPT" : "REJECT");
+        ret << new QStandardItem(from_kernel->action & 2 ? "LOG" : "NO LOG");
         break;
     }
     case RULE_ICMP:{
         // Sender IP, Receiver IP, Protocol, Action
         QHostAddress ipaddr(from_kernel->src_ip.ip);
-        ret << new QStandardItem(SPACE(ipaddr.toString() + "/" + QString::number(from_kernel->src_ip.mask)));
+        ret << new QStandardItem(ipaddr.toString() + "/" + QString::number(from_kernel->src_ip.mask));
         ipaddr.setAddress(from_kernel->dst_ip.ip);
-        ret << new QStandardItem(SPACE(ipaddr.toString() + "/" + QString::number(from_kernel->dst_ip.mask)));
-        ret << new QStandardItem(SPACE("ICMP"));
-        ret << new QStandardItem(SPACE(from_kernel->action & 1 ? "ACCEPT" : "REJECT"));
-        ret << new QStandardItem(SPACE(from_kernel->action & 2 ? "LOG" : "NO LOG"));
+        ret << new QStandardItem(ipaddr.toString() + "/" + QString::number(from_kernel->dst_ip.mask));
+        ret << new QStandardItem("ICMP");
+        ret << new QStandardItem(from_kernel->action & 1 ? "ACCEPT" : "REJECT");
+        ret << new QStandardItem(from_kernel->action & 2 ? "LOG" : "NO LOG");
         break;
     }
     }

@@ -16,7 +16,7 @@ class rule_deler : public QWidget
 
 public:
     explicit rule_deler(QWidget *parent = nullptr);
-    static bool del_rule(rule_tbd* tbd);
+    bool del_rule(rule_tbd* tbd);
     ~rule_deler();
 
 private slots:
@@ -31,6 +31,8 @@ private slots:
 private:
     rule_tbd tbd;
     Ui::rule_deler *ui;
+
+    QString manlog_generator();
 };
 
 #endif // RULE_DELER_H

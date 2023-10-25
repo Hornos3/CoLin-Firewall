@@ -275,7 +275,8 @@ void delink_nat_rule(nat_config* target){
         return;
     if(target == nat_rules){
         nat_rules = target->next;
-        nat_rules->prev = NULL;
+        if(nat_rules)
+            nat_rules->prev = NULL;
         kfree(target);
     }else if(target->next == NULL){
         target->prev->next = NULL;
@@ -296,7 +297,8 @@ nat_config* nat_rule_indexer(nat_config* rule){
         }
         switch(ptr->NAT_mode){
         case NAT_PAT:
-            if(!memcmp(rule, ptr, sizeof(nat_config)))
+            if(rule->config.pc.lan.ip == ptr->config.pc.lan.ip && rule->config.pc.lan.mask == ptr->config.pc.lan.mask
+                && rule->config.pc.wan == ptr->config.pc.wan)
                 return ptr;
             break;
         default:

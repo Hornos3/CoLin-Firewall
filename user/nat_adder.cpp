@@ -56,10 +56,30 @@ void nat_adder::on_btn_del_rule_clicked()
         QMessageBox::warning(this, "information incomplete", "There is still something not filled!");
     nc.NAT_mode = NAT_PAT;
     nc.config.pc.wan = ip_atohl(ui->host_ips->currentText());
-    if(ioctl(devfd, IOCTL_ADDDEL_NAT, &nc))
+    QFile logfile(maninst_path);
+    logfile.open(QIODevice::Append | QIODevice::Text);
+    if(ioctl(devfd, IOCTL_ADDDEL_NAT, &nc)){
+        logfile.write(manlog_generator().toStdString().c_str());
+        logfile.write(", FAILED TO ADD\n");
+        logfile.close();
         QMessageBox::critical(this, "Error", "Failed to add a nat config, the kernel module may has bugs!");
-    else
+    }else{
+        logfile.write(manlog_generator().toStdString().c_str());
+        logfile.write("\n");
+        logfile.close();
         QMessageBox::information(this, "note", "Successfully added a nat config.");
+    }
+}
+
+QString nat_adder::manlog_generator(){
+    QString ret = sectime_tostring(QDateTime::currentSecsSinceEpoch());
+    ret += ": ";
+    ret += "new NAT rule, ";
+    QHostAddress ipaddr(nc.config.pc.lan.ip);
+    ret += "LAN " + ipaddr.toString() + "/" + QString::number(nc.config.pc.lan.mask) + ", ";
+    ipaddr.setAddress(nc.config.pc.wan);
+    ret += "Gateway " + ipaddr.toString();
+    return ret;
 }
 
 void nat_adder::on_ip_0_returnPressed(){ui->ip_1->setFocus();}

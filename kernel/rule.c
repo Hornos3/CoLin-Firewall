@@ -70,25 +70,23 @@ bool add_rule(rule_tbi* tbi){
         mod_timer(&new_rule->timer, jiffies + HZ * from_user->rule.timeout);
     }
 #ifdef DEBUG_MODE
-    char *srcip = ip_ntoa(from_user->rule.src_ip.ip);
-    char *dstip = ip_ntoa(from_user->rule.dst_ip.ip);
+    unsigned tmp1 = ntohl(from_user->rule.src_ip.ip);
+    unsigned tmp2 = ntohl(from_user->rule.dst_ip.ip);
     char* src_range = range_tostring((port_range*)from_user->rule.src_ports, from_user->rule.src_port_len);
     char* dst_range = range_tostring((port_range*)from_user->rule.dst_ports, from_user->rule.dst_port_len);
     if(from_user->rule.protocol == RULE_TCP || from_user->rule.protocol == RULE_UDP)
-        printk(KERN_INFO "Successfully added a rule for hook %d, proto %d, source %s/%d, destination %s/%d, "
+        printk(KERN_INFO "Successfully added a rule for hook %d, proto %d, source %pI4/%d, destination %pI4/%d, "
                          "source port %s, dest port %s, action %s, %s, position %d\n", from_user->rule.hook,
-                         from_user->rule.protocol, srcip, from_user->rule.src_ip.mask, dstip,
+                         from_user->rule.protocol, &tmp1, from_user->rule.src_ip.mask, &tmp2,
                          from_user->rule.dst_ip.mask, src_range, dst_range,
                          (from_user->rule.action & 1) ? "ACCEPT" : "REJECT",
                          (from_user->rule.action & 2) ? "LOG" : "NO LOG", from_user->insert_pos);
     else
-        printk(KERN_INFO "Successfully added a rule for hook %d, proto %d, source %s/%d, destination %s/%d, "
-                         "action %s, %s position %d\n", from_user->rule.hook, from_user->rule.protocol, srcip,
-                         from_user->rule.src_ip.mask, dstip, from_user->rule.dst_ip.mask,
+        printk(KERN_INFO "Successfully added a rule for hook %d, proto %d, source %pI4/%d, destination %pI4/%d, "
+                         "action %s, %s position %d\n", from_user->rule.hook, from_user->rule.protocol, &tmp1,
+                         from_user->rule.src_ip.mask, &tmp2, from_user->rule.dst_ip.mask,
                          (from_user->rule.action & 1) ? "ACCEPT" : "REJECT",
                          (from_user->rule.action & 2) ? "LOG" : "NO LOG", from_user->insert_pos);
-    kfree(srcip);
-    kfree(dstip);
     kfree(src_range);
     kfree(dst_range);
 #endif
@@ -204,12 +202,10 @@ bool add_nat(nat_config* new_conf){
     spin_unlock(&nat_lock);
 
 #ifdef DEBUG_MODE
-    char* srcip = ip_ntoa(from_user->config.pc.lan.ip);
-    char* dstip = ip_ntoa(from_user->config.pc.wan);
-    printk(KERN_INFO "Successfully added a nat rule for lan %s/%d, wan %s\n", srcip,
-            from_user->config.pc.lan.mask, dstip);
-    kfree(srcip);
-    kfree(dstip);
+    unsigned tmp1 = ntohl(from_user->config.pc.lan.ip);
+    unsigned tmp2 = ntohl(from_user->config.pc.wan);
+    printk(KERN_INFO "Successfully added a nat rule for lan %pI4/%d, wan %pI4\n", &tmp1,
+            from_user->config.pc.lan.mask, &tmp2);
 #endif
     return true;
 }
@@ -223,6 +219,12 @@ bool del_nat(nat_config* target){
         spin_unlock(&nat_lock);
         return false;
     }
+#ifdef DEBUG_MODE
+    unsigned tmp1 = ntohl(t->config.pc.lan.ip);
+    unsigned tmp2 = ntohl(t->config.pc.wan);
+    printk(KERN_INFO "Successfully deleted a nat rule for lan %pI4/%d, wan %pI4\n", &tmp1,
+            t->config.pc.lan.mask, &tmp2);
+#endif
     delink_nat_rule(t);
     spin_unlock(&nat_lock);
     return true;

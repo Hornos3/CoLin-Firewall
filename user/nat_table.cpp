@@ -8,8 +8,11 @@ nat_table::nat_table()
 void nat_table::update_nat(){
     nat_config_touser* data = (nat_config_touser*)malloc(MAX_NAT_BUFLEN);
     unsigned cnt = ioctl(devfd, IOCTL_GET_PAT, data);
-    if(!cnt)
+    nat_model->removeRows(0, nat_model->rowCount());
+    if(!cnt){
+        free(data);
         return;
+    }
     nat_model->removeRows(0, nat_model->rowCount());
     for(int i=0; i<cnt; i++){
         /////////////////////////////
@@ -18,9 +21,9 @@ void nat_table::update_nat(){
         /////////////////////////////
         QList<QStandardItem*> next_row;
         QHostAddress ip(data[i].config.pc.lan.ip);
-        next_row << new QStandardItem(SPACE(ip.toString() + "/" + QString::number(data[i].config.pc.lan.mask)));
+        next_row << new QStandardItem(ip.toString() + "/" + QString::number(data[i].config.pc.lan.mask));
         ip.setAddress(data[i].config.pc.wan);
-        next_row << new QStandardItem(SPACE(ip.toString()));
+        next_row << new QStandardItem(ip.toString());
         for(QStandardItem* item : next_row)
             item->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
         nat_model->appendRow(next_row);

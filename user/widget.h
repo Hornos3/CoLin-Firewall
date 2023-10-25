@@ -26,6 +26,7 @@
 #include "con_table.h"
 #include "log_table.h"
 #include "nat_adder.h"
+#include "nat_deler.h"
 #include "nat_table.h"
 #include "log_filter.h"
 #include "rule_adder.h"
@@ -84,6 +85,8 @@ private slots:
     void on_btn_nats_clicked();
 
     void on_btn_logfilter_clicked();
+
+    void on_btn_delnat_clicked();
 
 private:
     Ui::Widget *ui;

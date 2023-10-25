@@ -4,12 +4,12 @@ This is a student's project for Linux firewall.
 
 Development environment: 
 - Ubuntu version: Ubuntu 20.04
-- Linux version: 5.15.0-83-generic
+- Linux version: 5.15.0-87-generic
 - Qt version: 5.12.8
 
 ## 0x01. Basic Functions
 
-The firewall contains a kernel module and a GUI. The kernel module is used for hooking 5 hooks: PRE_ROUTING, LOCAL_IN, LOCAL_OUT, FORWARD and POST_ROUTING. The kernel module provides lots of interfaces for communication with the GUI.
+The firewall contains a kernel module and a GUI. The kernel module is used for hooking 2 hooks: PRE_ROUTING and POST_ROUTING. The kernel module provides lots of interfaces for communication with the GUI.
 
 Until the latest version, the firewall can manage:
 
