@@ -25,6 +25,7 @@ settings::settings(QWidget *parent) :
     ui->max_rule->setValue(max_rule);
     ui->max_nat->setValue(max_nat);
     ui->rule_path->setText(rule_path);
+    ui->log_path->setText(autosave_path);
     ui->default_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->default_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
     ui->default_table->horizontalHeader()->resizeSection(0, 180);
@@ -265,4 +266,17 @@ void settings::on_log_autosave_stateChanged(int arg1)
     autosave_log = ui->log_autosave->isChecked();
     if(!autosave_log)
         ui->log_path->setEnabled(false);
+}
+
+void settings::on_log_path_editingFinished()
+{
+    if(!save_file_valid(ui->log_path->text())){
+        QMessageBox::warning(this, "warning", "Specified path invalid, check if the parent directory exists.");
+        ui->log_path->setText(autosave_path);
+        return;
+    }
+    autosave_path = ui->log_path->text();
+    QFile new_logfile(autosave_path);
+    if(!new_logfile.exists())
+        system((QString("touch ") + autosave_path).toStdString().c_str());
 }

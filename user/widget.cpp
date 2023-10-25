@@ -39,12 +39,18 @@ Widget::Widget(QWidget *parent)
     QFileInfo fi("/etc/lhy_firewall/gui-autosave");
     if(!fi.exists()){
         system("touch /etc/lhy_firewall/gui-autosave");
-        system((QString("echo ") + autosave_path + " < /etc/lhy_firewall/gui-autosave").toStdString().c_str());
+        QFile sf("/etc/lhy_firewall/gui-autosave");
+        sf.open(QIODevice::Truncate | QIODevice::WriteOnly);
+        sf.write("/etc/lhy_firewall/log_autosave");
+        sf.close();
     }else{
         autosave_path = readall("/etc/lhy_firewall/gui-autosave");
         if(!save_file_valid(autosave_path)){
-            qDebug() << "Previous autosave path invalid, switch to default: /etc/lhy_firewall/log_autosave.fwl";
-            system((QString("echo ") + autosave_path + " < /etc/lhy_firewall/gui-autosave").toStdString().c_str());
+            qDebug() << "Previous autosave path invalid, switch to default: /etc/lhy_firewall/log_autosave";
+            QFile sf("/etc/lhy_firewall/gui-autosave");
+            sf.open(QIODevice::Truncate | QIODevice::WriteOnly);
+            sf.write("/etc/lhy_firewall/log_autosave");
+            sf.close();
             autosave_path = "/etc/lhy_firewall/log_autosave";
         }
     }
@@ -108,6 +114,17 @@ void Widget::closeEvent(QCloseEvent* e){
     update_timer.stop();
     shell("rmmod ../kernel/lhy_firewall.ko", "Successfully removed the kernel module.",
           "Failed to remove the kernel module.");
+    QFileInfo fi("/etc/lhy_firewall/gui-autosave");
+    if(!fi.exists())
+        system("touch /etc/lhy_firewall/gui-autosave");
+    QFile sf("/etc/lhy_firewall/gui-autosave");
+    sf.open(QIODevice::Truncate | QIODevice::WriteOnly);
+    if(!save_file_valid(autosave_path)){
+        qDebug() << "Previous autosave path invalid, switch to default: /etc/lhy_firewall/log_autosave";
+        sf.write("/etc/lhy_firewall/log_autosave");
+    }else
+        sf.write(autosave_path.toStdString().c_str());
+    sf.close();
     exit(0);
 }
 
@@ -378,4 +395,10 @@ void Widget::on_btn_delnat_clicked()
 {
     nat_deler* deler = new nat_deler();
     deler->show();
+}
+
+void Widget::on_btn_changerule_clicked()
+{
+    rule_changer* changer = new rule_changer();
+    changer->show();
 }

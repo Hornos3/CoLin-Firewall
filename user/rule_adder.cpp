@@ -243,6 +243,8 @@ void rule_adder::on_timeout_isset_stateChanged(int arg1)
     Q_UNUSED(arg1);
     ui->timeout->setText("");
     ui->timeout->setEnabled(ui->timeout_isset->isChecked());
+    if(!ui->timeout->isEnabled())
+        tbi.rule.timeout = 0;
 }
 
 void rule_adder::on_timeout_editingFinished()

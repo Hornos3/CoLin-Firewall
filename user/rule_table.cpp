@@ -49,6 +49,10 @@ QList<QStandardItem*> rule_table::analyse_kernel_info(fwrule_user* from_kernel){
         break;
     }
     }
+    if(from_kernel->timeout)
+        ret << new QStandardItem(sectime_tostring(from_kernel->timeout));
+    else
+        ret << new QStandardItem("/");
     for(QStandardItem* item : ret)
         item->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
     return ret;

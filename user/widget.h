@@ -32,6 +32,7 @@
 #include "rule_adder.h"
 #include "rule_deler.h"
 #include "rule_table.h"
+#include "rule_changer.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
@@ -87,6 +88,8 @@ private slots:
     void on_btn_logfilter_clicked();
 
     void on_btn_delnat_clicked();
+
+    void on_btn_changerule_clicked();
 
 private:
     Ui::Widget *ui;

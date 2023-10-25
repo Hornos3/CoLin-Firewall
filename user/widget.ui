@@ -251,6 +251,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="btn_changerule">
+       <property name="text">
+        <string>Change rule</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="btn_addnat">
        <property name="text">
         <string>Add NAT</string>

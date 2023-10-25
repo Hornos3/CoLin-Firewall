@@ -46,7 +46,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-621</y>
+        <y>0</y>
         <width>584</width>
         <height>1101</height>
        </rect>
@@ -88,7 +88,7 @@
        <item row="15" column="4">
         <widget class="QSpinBox" name="icmp_max_con">
          <property name="minimum">
-          <number>5</number>
+          <number>64</number>
          </property>
          <property name="maximum">
           <number>128</number>
@@ -474,7 +474,7 @@
        <item row="13" column="4">
         <widget class="QSpinBox" name="tcp_max_con">
          <property name="minimum">
-          <number>5</number>
+          <number>64</number>
          </property>
          <property name="maximum">
           <number>1024</number>
@@ -484,7 +484,7 @@
        <item row="14" column="4">
         <widget class="QSpinBox" name="udp_max_con">
          <property name="minimum">
-          <number>5</number>
+          <number>64</number>
          </property>
          <property name="maximum">
           <number>1024</number>

@@ -62,6 +62,7 @@ SOURCES       = common.cpp \
 		nat_deler.cpp \
 		nat_table.cpp \
 		rule_adder.cpp \
+		rule_changer.cpp \
 		rule_deler.cpp \
 		rule_table.cpp \
 		settings.cpp \
@@ -70,6 +71,7 @@ SOURCES       = common.cpp \
 		moc_nat_adder.cpp \
 		moc_nat_deler.cpp \
 		moc_rule_adder.cpp \
+		moc_rule_changer.cpp \
 		moc_rule_deler.cpp \
 		moc_settings.cpp \
 		moc_widget.cpp
@@ -83,6 +85,7 @@ OBJECTS       = common.o \
 		nat_deler.o \
 		nat_table.o \
 		rule_adder.o \
+		rule_changer.o \
 		rule_deler.o \
 		rule_table.o \
 		settings.o \
@@ -92,6 +95,7 @@ OBJECTS       = common.o \
 		moc_nat_adder.o \
 		moc_nat_deler.o \
 		moc_rule_adder.o \
+		moc_rule_changer.o \
 		moc_rule_deler.o \
 		moc_settings.o \
 		moc_widget.o
@@ -181,6 +185,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		nat_deler.h \
 		nat_table.h \
 		rule_adder.h \
+		rule_changer.h \
 		rule_deler.h \
 		rule_table.h \
 		settings.h \
@@ -194,6 +199,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		nat_deler.cpp \
 		nat_table.cpp \
 		rule_adder.cpp \
+		rule_changer.cpp \
 		rule_deler.cpp \
 		rule_table.cpp \
 		settings.cpp \
@@ -206,7 +212,7 @@ TARGET        = firewall_user
 first: all
 ####### Build rules
 
-firewall_user: ui_filter_widget.h ui_log_filter.h ui_nat_adder.h ui_nat_deler.h ui_rule_adder.h ui_rule_deler.h ui_settings.h ui_widget.h $(OBJECTS)  
+firewall_user: ui_filter_widget.h ui_log_filter.h ui_nat_adder.h ui_nat_deler.h ui_rule_adder.h ui_rule_changer.h ui_rule_deler.h ui_settings.h ui_widget.h $(OBJECTS)  
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
 Makefile: firewall_user.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
@@ -381,9 +387,9 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents common.h con_table.h filter_widget.h log_filter.h log_table.h nat_adder.h nat_deler.h nat_table.h rule_adder.h rule_deler.h rule_table.h settings.h widget.h $(DISTDIR)/
-	$(COPY_FILE) --parents common.cpp con_table.cpp filter_widget.cpp log_filter.cpp log_table.cpp main.cpp nat_adder.cpp nat_deler.cpp nat_table.cpp rule_adder.cpp rule_deler.cpp rule_table.cpp settings.cpp widget.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents filter_widget.ui log_filter.ui nat_adder.ui nat_deler.ui rule_adder.ui rule_deler.ui settings.ui widget.ui $(DISTDIR)/
+	$(COPY_FILE) --parents common.h con_table.h filter_widget.h log_filter.h log_table.h nat_adder.h nat_deler.h nat_table.h rule_adder.h rule_changer.h rule_deler.h rule_table.h settings.h widget.h $(DISTDIR)/
+	$(COPY_FILE) --parents common.cpp con_table.cpp filter_widget.cpp log_filter.cpp log_table.cpp main.cpp nat_adder.cpp nat_deler.cpp nat_table.cpp rule_adder.cpp rule_changer.cpp rule_deler.cpp rule_table.cpp settings.cpp widget.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents filter_widget.ui log_filter.ui nat_adder.ui nat_deler.ui rule_adder.ui rule_changer.ui rule_deler.ui settings.ui widget.ui $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -415,9 +421,9 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 	g++ -pipe -g -std=gnu++11 -Wall -W -dM -E -o moc_predefs.h /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_filter_widget.cpp moc_log_filter.cpp moc_nat_adder.cpp moc_nat_deler.cpp moc_rule_adder.cpp moc_rule_deler.cpp moc_settings.cpp moc_widget.cpp
+compiler_moc_header_make_all: moc_filter_widget.cpp moc_log_filter.cpp moc_nat_adder.cpp moc_nat_deler.cpp moc_rule_adder.cpp moc_rule_changer.cpp moc_rule_deler.cpp moc_settings.cpp moc_widget.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_filter_widget.cpp moc_log_filter.cpp moc_nat_adder.cpp moc_nat_deler.cpp moc_rule_adder.cpp moc_rule_deler.cpp moc_settings.cpp moc_widget.cpp
+	-$(DEL_FILE) moc_filter_widget.cpp moc_log_filter.cpp moc_nat_adder.cpp moc_nat_deler.cpp moc_rule_adder.cpp moc_rule_changer.cpp moc_rule_deler.cpp moc_settings.cpp moc_widget.cpp
 moc_filter_widget.cpp: filter_widget.h \
 		moc_predefs.h \
 		/usr/lib/qt5/bin/moc
@@ -448,6 +454,12 @@ moc_rule_adder.cpp: rule_adder.h \
 		moc_predefs.h \
 		/usr/lib/qt5/bin/moc
 	/usr/lib/qt5/bin/moc $(DEFINES) --include /root/Desktop/my_firewall/user/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/root/Desktop/my_firewall/user -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtNetwork -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/9 -I/usr/include/x86_64-linux-gnu/c++/9 -I/usr/include/c++/9/backward -I/usr/lib/gcc/x86_64-linux-gnu/9/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include rule_adder.h -o moc_rule_adder.cpp
+
+moc_rule_changer.cpp: rule_changer.h \
+		common.h \
+		moc_predefs.h \
+		/usr/lib/qt5/bin/moc
+	/usr/lib/qt5/bin/moc $(DEFINES) --include /root/Desktop/my_firewall/user/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/root/Desktop/my_firewall/user -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtNetwork -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/9 -I/usr/include/x86_64-linux-gnu/c++/9 -I/usr/include/c++/9/backward -I/usr/lib/gcc/x86_64-linux-gnu/9/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include rule_changer.h -o moc_rule_changer.cpp
 
 moc_rule_deler.cpp: rule_deler.h \
 		common.h \
@@ -482,9 +494,9 @@ compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
-compiler_uic_make_all: ui_filter_widget.h ui_log_filter.h ui_nat_adder.h ui_nat_deler.h ui_rule_adder.h ui_rule_deler.h ui_settings.h ui_widget.h
+compiler_uic_make_all: ui_filter_widget.h ui_log_filter.h ui_nat_adder.h ui_nat_deler.h ui_rule_adder.h ui_rule_changer.h ui_rule_deler.h ui_settings.h ui_widget.h
 compiler_uic_clean:
-	-$(DEL_FILE) ui_filter_widget.h ui_log_filter.h ui_nat_adder.h ui_nat_deler.h ui_rule_adder.h ui_rule_deler.h ui_settings.h ui_widget.h
+	-$(DEL_FILE) ui_filter_widget.h ui_log_filter.h ui_nat_adder.h ui_nat_deler.h ui_rule_adder.h ui_rule_changer.h ui_rule_deler.h ui_settings.h ui_widget.h
 ui_filter_widget.h: filter_widget.ui \
 		/usr/lib/qt5/bin/uic
 	/usr/lib/qt5/bin/uic filter_widget.ui -o ui_filter_widget.h
@@ -504,6 +516,10 @@ ui_nat_deler.h: nat_deler.ui \
 ui_rule_adder.h: rule_adder.ui \
 		/usr/lib/qt5/bin/uic
 	/usr/lib/qt5/bin/uic rule_adder.ui -o ui_rule_adder.h
+
+ui_rule_changer.h: rule_changer.ui \
+		/usr/lib/qt5/bin/uic
+	/usr/lib/qt5/bin/uic rule_changer.ui -o ui_rule_changer.h
 
 ui_rule_deler.h: rule_deler.ui \
 		/usr/lib/qt5/bin/uic
@@ -583,6 +599,11 @@ rule_adder.o: rule_adder.cpp rule_adder.h \
 		ui_rule_adder.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o rule_adder.o rule_adder.cpp
 
+rule_changer.o: rule_changer.cpp rule_changer.h \
+		common.h \
+		ui_rule_changer.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o rule_changer.o rule_changer.cpp
+
 rule_deler.o: rule_deler.cpp rule_deler.h \
 		common.h \
 		ui_rule_deler.h
@@ -628,6 +649,9 @@ moc_nat_deler.o: moc_nat_deler.cpp
 
 moc_rule_adder.o: moc_rule_adder.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_rule_adder.o moc_rule_adder.cpp
+
+moc_rule_changer.o: moc_rule_changer.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_rule_changer.o moc_rule_changer.cpp
 
 moc_rule_deler.o: moc_rule_deler.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_rule_deler.o moc_rule_deler.cpp

@@ -20,6 +20,7 @@ class rule_adder : public QWidget
 
 public:
     explicit rule_adder(QWidget *parent = nullptr);
+    static bool check_range(QString input, port_range dest[MAX_RANGE_IN_A_RULE], unsigned* range_len);
     ~rule_adder();
 
 private slots:
@@ -103,7 +104,6 @@ private:
     QLineEdit* dstip[5];
     Ui::rule_adder *ui;
 
-    bool check_range(QString input, port_range dest[MAX_RANGE_IN_A_RULE], unsigned* range_len);
     QString manlog_generator();
 
 };

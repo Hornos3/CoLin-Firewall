@@ -57,6 +57,8 @@ private slots:
 
     void on_log_autosave_stateChanged(int arg1);
 
+    void on_log_path_editingFinished();
+
 private:
     Ui::settings *ui;
 };

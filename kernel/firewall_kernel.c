@@ -79,8 +79,12 @@ unsigned int tcp_handler(void* priv, struct sk_buff* skb,
 
         if(mayexist->log)
             new_tcp_log(&pkg, ACCEPT, hook_point);
-        reset_timer(mayexist, RULE_TCP, get_next_timeout(mayexist->timeout, RULE_TCP));
-        mayexist->timeout = get_next_timeout(mayexist->timeout, RULE_TCP);
+        if(mayexist->status == TCP_CON_CLOSED)
+            del_tu_connection(mayexist, 1);     // when the connection closed, delete it directly
+        else{
+            reset_timer(mayexist, RULE_TCP, get_next_timeout(mayexist->timeout, RULE_TCP));
+            mayexist->timeout = get_next_timeout(mayexist->timeout, RULE_TCP);
+        }
         goto tcp_accept;
     }else{
         if(!pkg.header->syn){

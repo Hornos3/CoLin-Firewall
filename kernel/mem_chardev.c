@@ -54,11 +54,8 @@ ssize_t cdev_write(struct file* file, const char* __user buf, size_t size, loff_
 // command_code = 0b1111111: dump/load all rules into/from a file, filename is in
 //                           (void*)arg, the LSB of arg: 0 for dump, 1 for load.
 
-// command_code = 0b....000: instruction for PRE_ROUTING hook.
-// command_code = 0b....001: instruction for LOCAL_IN hook.
-// command_code = 0b....010: instruction for LOCAL_OUT hook.
-// command_code = 0b....011: instruction for FORWARD hook.
-// command_code = 0b....100: instruction for POST_ROUTING hook.
+// command_code = 0b......0: instruction for PRE_ROUTING hook.
+// command_code = 0b......1: instruction for POST_ROUTING hook.
 
 // command_code = 0b..00...: instruction for all protocols.
 // command_code = 0b..01...: instruction for tcp.

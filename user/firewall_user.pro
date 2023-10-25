@@ -26,6 +26,7 @@ SOURCES += \
     nat_deler.cpp \
     nat_table.cpp \
     rule_adder.cpp \
+    rule_changer.cpp \
     rule_deler.cpp \
     rule_table.cpp \
     settings.cpp \
@@ -41,6 +42,7 @@ HEADERS += \
     nat_deler.h \
     nat_table.h \
     rule_adder.h \
+    rule_changer.h \
     rule_deler.h \
     rule_table.h \
     settings.h \
@@ -52,6 +54,7 @@ FORMS += \
     nat_adder.ui \
     nat_deler.ui \
     rule_adder.ui \
+    rule_changer.ui \
     rule_deler.ui \
     settings.ui \
     widget.ui

@@ -38,9 +38,9 @@ const QString proto_names[PROTOCOL_SUPPORTED] = {
 };
 
 const QStringList rule_headers[PROTOCOL_SUPPORTED] = {
-    {"Sender IP", "Sender Port", "Receiver IP", "Receiver Port", "Protocol", "Action", "Log"},
-    {"Sender IP", "Sender Port", "Receiver IP", "Receiver Port", "Protocol", "Action", "Log"},
-    {"Sender IP", "Receiver IP", "Protocol", "Action", "Log"}
+    {"Sender IP", "Sender Port", "Receiver IP", "Receiver Port", "Protocol", "Action", "Log", "Timeout"},
+    {"Sender IP", "Sender Port", "Receiver IP", "Receiver Port", "Protocol", "Action", "Log", "Timeout"},
+    {"Sender IP", "Receiver IP", "Protocol", "Action", "Log", "Timeout"}
 };
 const QStringList log_headers[PROTOCOL_SUPPORTED] = {
     {"Time", "Sender", "Receiver", "Action", "Hook point", "Seq", "Ack Seq", "Symbols", "Packet Length"},
